@@ -73,8 +73,14 @@ class SrealityScraper(BaseScraper):
                     continue
 
                 seo = e.get("seo", {})
-                sub_cb_val = seo.get("category_sub_cb", "")
-                main_cb = seo.get("category_main_cb", 1)
+                try:
+                    sub_cb_val = int(seo.get("category_sub_cb", 0))
+                except (ValueError, TypeError):
+                    sub_cb_val = 0
+                try:
+                    main_cb = int(seo.get("category_main_cb", 1))
+                except (ValueError, TypeError):
+                    main_cb = 1
                 locality_seo = seo.get("locality", "")
 
                 # Disposition label (for flats)
@@ -110,7 +116,7 @@ class SrealityScraper(BaseScraper):
                 offer = "pronajem" if type_cb == 2 else "prodej"
                 cat_map = {1: "byt", 2: "dum", 3: "pozemek"}
                 cat = cat_map.get(main_cb, "byt")
-                disp_slug = disp_label or str(sub_cb_val)
+                disp_slug = (disp_label or str(sub_cb_val)).replace(" ", "-")
                 detail_url = f"https://www.sreality.cz/detail/{offer}/{cat}/{disp_slug}/{locality_seo}/{hash_id}"
 
                 listings.append(Listing(

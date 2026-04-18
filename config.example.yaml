@@ -1,0 +1,21 @@
+search:
+  max_price: 25000
+
+scrapers:
+  sreality:
+    enabled: true
+  bezrealitky:
+    enabled: true
+  remax:
+    enabled: true
+
+email:
+  smtp_host: "smtp.gmail.com"
+  smtp_port: 587
+  smtp_user: "your-email@gmail.com"
+  smtp_password: "your-app-password"
+  from: "your-email@gmail.com"
+  to: "your-email@gmail.com"
+
+schedule:
+  cron_interval_hours: 3

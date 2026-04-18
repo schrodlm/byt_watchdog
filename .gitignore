@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+data/seen.json
+data/cron.log
+config.yaml
+venv/
+.env

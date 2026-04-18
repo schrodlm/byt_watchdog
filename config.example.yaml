@@ -93,7 +93,7 @@ profiles:
         osm_value: "Domazlice"
       remax:
         enabled: true
-        search_url: "https://www.remax-czech.cz/reality/vyhledavani/?hledani=1&types%5B6%5D=on&types%5B10%5D=on&regions%5B43%5D%5B3402%5D=on"
+        search_url: "https://www.remax-czech.cz/reality/vyhledavani/?hledani=1&price_from={min_price}&price_to={max_price}&types%5B6%5D=on&types%5B10%5D=on&regions%5B43%5D%5B3402%5D=on"
 
     scoring:
       price_per_m2_weight: 0      # Not relevant for houses

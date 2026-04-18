@@ -88,6 +88,10 @@ def run_profile(profile_id: str, profile: dict, email_cfg: dict, dry_run: bool =
     # Scrape all sources for this profile
     all_listings = []
     scraper_configs = profile.get("scrapers", {})
+    enabled_count = sum(1 for n in ALL_SCRAPERS if scraper_configs.get(n, {}).get("enabled", False))
+    if enabled_count == 0:
+        log.warning("Profile %s has no enabled scrapers", profile_id)
+        return
 
     for name, scraper_cls in ALL_SCRAPERS.items():
         scraper_cfg = scraper_configs.get(name, {})
@@ -174,6 +178,11 @@ def run_profile(profile_id: str, profile: dict, email_cfg: dict, dry_run: bool =
     recipients = profile.get("to", [])
     if isinstance(recipients, str):
         recipients = [recipients]
+
+    if not recipients:
+        log.error("Profile %s has no 'to' recipients configured - skipping email", profile_id)
+        db.mark_seen(profile_id, all_listings)
+        return
 
     # Send email FIRST
     try:

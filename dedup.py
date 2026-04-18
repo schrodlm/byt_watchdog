@@ -1,108 +1,126 @@
-"""Cross-source deduplication - detect same flat listed on multiple sites."""
+"""Cross-source deduplication - detect same property listed on multiple sites."""
 
+import math
+import re
 from scrapers.base import Listing
+
+SKIP_WORDS = {
+    "praha", "prague", "pronajem", "pronájem", "prodej",
+    "bytu", "byt", "domu", "dum", "dům", "chalupy", "chalupa",
+    "okres", "kraj", "obec", "mesto", "město",
+}
+
+
+def _haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> int:
+    R = 6371000
+    phi1, phi2 = math.radians(lat1), math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlam = math.radians(lon2 - lon1)
+    a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlam / 2) ** 2
+    return round(2 * R * math.atan2(math.sqrt(a), math.sqrt(1 - a)))
 
 
 def _normalize_location(loc: str) -> str:
-    """Normalize location for comparison."""
-    return loc.lower().replace(",", "").replace("-", " ").replace("  ", " ").strip()
+    return re.sub(r"\s+", " ", loc.lower().replace(",", "").replace("-", " ")).strip()
 
 
 def _locations_overlap(loc1: str, loc2: str) -> bool:
-    """Check if two locations likely refer to the same place."""
     n1 = _normalize_location(loc1)
     n2 = _normalize_location(loc2)
     if not n1 or not n2:
         return False
-
-    # Extract meaningful tokens (skip common words)
-    skip = {"praha", "prague", "7", "pronajem", "bytu", "byt"}
-    tokens1 = {t for t in n1.split() if t not in skip and len(t) > 2}
-    tokens2 = {t for t in n2.split() if t not in skip and len(t) > 2}
-
+    tokens1 = {t for t in n1.split() if t not in SKIP_WORDS and len(t) > 2}
+    tokens2 = {t for t in n2.split() if t not in SKIP_WORDS and len(t) > 2}
     if not tokens1 or not tokens2:
         return False
+    return len(tokens1 & tokens2) > 0
 
-    # Check if any meaningful tokens overlap
-    overlap = tokens1 & tokens2
-    return len(overlap) > 0
+
+def _are_same_property(li: Listing, lj: Listing) -> bool:
+    """Determine if two listings from different sources are the same property."""
+    if not li.price or not lj.price:
+        return False
+    price_diff = abs(li.price - lj.price) / max(li.price, lj.price)
+    if price_diff > 0.10:
+        return False
+
+    if li.disposition and lj.disposition:
+        if li.disposition.lower() != lj.disposition.lower():
+            return False
+
+    if li.size_m2 and lj.size_m2:
+        if abs(li.size_m2 - lj.size_m2) > 5:
+            return False
+
+    # GPS proximity (strongest signal)
+    if li.lat is not None and lj.lat is not None:
+        dist = _haversine_m(li.lat, li.lon, lj.lat, lj.lon)
+        if dist < 200:
+            return True
+        if dist > 1000:
+            return False
+
+    if not _locations_overlap(li.location, lj.location):
+        return False
+
+    return True
 
 
 def cross_source_dedup(listings: list[Listing]) -> list[Listing]:
-    """Mark listings that appear on multiple sources.
+    """Detect same property listed on multiple sites.
 
-    Uses fuzzy matching: same disposition + similar price + overlapping location.
-    Does NOT remove duplicates - just marks them with cross_source field.
-    Returns deduplicated list (keeps the listing with most data).
+    Uses strict pairwise matching (no transitive grouping).
+    For each cross-source pair found, keeps the listing with more data
+    and annotates it with the other source.
     """
     if len(listings) < 2:
         return listings
 
-    # Group by (disposition, approximate price, approximate size)
-    groups: list[list[int]] = []  # groups of indices
-    used = set()
+    # For each listing, track which other listing it's a duplicate of
+    # Key: index to remove -> Value: index of the keeper
+    remove_to_keeper: dict[int, int] = {}
 
     for i in range(len(listings)):
-        if i in used:
+        if i in remove_to_keeper:
             continue
-        group = [i]
-        used.add(i)
-        li = listings[i]
-
         for j in range(i + 1, len(listings)):
-            if j in used:
+            if j in remove_to_keeper:
                 continue
-            lj = listings[j]
-
-            # Must be from different sources
-            if li.source == lj.source:
+            if listings[i].source == listings[j].source:
+                continue
+            if not _are_same_property(listings[i], listings[j]):
                 continue
 
-            # Price within 10%
-            if li.price and lj.price:
-                price_diff = abs(li.price - lj.price) / max(li.price, lj.price)
-                if price_diff > 0.10:
-                    continue
+            # Determine which to keep (more data = better)
+            li, lj = listings[i], listings[j]
+            i_score = sum([
+                li.lat is not None,
+                li.charges is not None,
+                li.land_m2 is not None,
+                li.size_m2 is not None,
+                bool(li.image_url),
+            ])
+            j_score = sum([
+                lj.lat is not None,
+                lj.charges is not None,
+                lj.land_m2 is not None,
+                lj.size_m2 is not None,
+                bool(lj.image_url),
+            ])
+
+            if i_score >= j_score:
+                keeper_idx, remove_idx = i, j
             else:
-                continue
+                keeper_idx, remove_idx = j, i
 
-            # Same disposition (if both known)
-            if li.disposition and lj.disposition:
-                if li.disposition.lower() != lj.disposition.lower():
-                    continue
+            remove_to_keeper[remove_idx] = keeper_idx
 
-            # Size within 5 m2 (if both known)
-            if li.size_m2 and lj.size_m2:
-                if abs(li.size_m2 - lj.size_m2) > 5:
-                    continue
+    # Build cross_source annotations
+    for remove_idx, keeper_idx in remove_to_keeper.items():
+        keeper = listings[keeper_idx]
+        removed = listings[remove_idx]
+        # Only add if source is different from keeper's source
+        if removed.source != keeper.source and removed.source not in keeper.cross_source:
+            keeper.cross_source.append(removed.source)
 
-            # Location overlap
-            if not _locations_overlap(li.location, lj.location):
-                continue
-
-            group.append(j)
-            used.add(j)
-
-        if len(group) > 1:
-            groups.append(group)
-
-    # Mark cross-source matches
-    remove_indices = set()
-    for group in groups:
-        # Pick the "best" listing (most data) to keep
-        group_listings = [(idx, listings[idx]) for idx in group]
-        group_listings.sort(key=lambda x: (
-            x[1].lat is not None,       # prefer with GPS
-            x[1].charges is not None,   # prefer with charges
-            x[1].size_m2 is not None,   # prefer with size
-        ), reverse=True)
-
-        keeper_idx, keeper = group_listings[0]
-        other_sources = [listings[idx].source for idx, _ in group_listings[1:]]
-        keeper.cross_source = other_sources
-
-        for idx, _ in group_listings[1:]:
-            remove_indices.add(idx)
-
-    # Return filtered list
-    return [l for i, l in enumerate(listings) if i not in remove_indices]
+    return [l for i, l in enumerate(listings) if i not in remove_to_keeper]

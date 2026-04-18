@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Byt Watchdog - Flat rental monitor for Praha 7."""
+"""Byt Watchdog - Multi-profile real estate monitor."""
 
 import argparse
 import logging
@@ -10,7 +10,7 @@ import yaml
 
 import db
 from dedup import cross_source_dedup
-from metro import enrich_metro
+from metro import enrich_tram
 from notifier import send_email
 from scoring import compute_score
 from scrapers import ALL_SCRAPERS
@@ -36,17 +36,15 @@ def load_config() -> dict:
 
 
 def _acquire_pidlock() -> bool:
-    """Prevent concurrent runs. Returns True if lock acquired."""
     os.makedirs(os.path.dirname(PID_PATH), exist_ok=True)
     if os.path.exists(PID_PATH):
         try:
             with open(PID_PATH, "r") as f:
                 old_pid = int(f.read().strip())
-            # Check if process is still running
             os.kill(old_pid, 0)
-            return False  # Process still alive
-        except (ValueError, ProcessLookupError, PermissionError):
-            pass  # Stale pidfile, safe to continue
+            return False
+        except (ValueError, OSError):
+            pass  # Stale/corrupt pidfile, safe to reclaim
     with open(PID_PATH, "w") as f:
         f.write(str(os.getpid()))
     return True
@@ -59,11 +57,11 @@ def _release_pidlock():
         pass
 
 
-def _apply_filters(listings: list, config: dict) -> list:
-    """Apply disposition and size filters from config."""
-    search = config.get("search", {})
+def _apply_filters(listings: list, profile: dict) -> list:
+    search = profile.get("search", {})
     dispositions = search.get("dispositions", [])
     min_size = search.get("min_size_m2", 0)
+    min_land = search.get("min_land_m2", 0)
 
     result = listings
     if dispositions:
@@ -74,42 +72,35 @@ def _apply_filters(listings: list, config: dict) -> list:
         ]
 
     if min_size > 0:
-        result = [
-            l for l in result
-            if l.size_m2 is None or l.size_m2 >= min_size
-        ]
+        result = [l for l in result if l.size_m2 is None or l.size_m2 >= min_size]
+
+    if min_land > 0:
+        result = [l for l in result if l.land_m2 is None or l.land_m2 >= min_land]
 
     return result
 
 
-def run(dry_run: bool = False):
-    config = load_config()
-    scraper_configs = config.get("scrapers", {})
+def run_profile(profile_id: str, profile: dict, email_cfg: dict, dry_run: bool = False):
+    """Run a single profile: scrape, filter, score, notify."""
+    profile_name = profile.get("name", profile_id)
+    log.info("=== Profile: %s ===", profile_name)
 
-    if not _acquire_pidlock():
-        log.warning("Another instance is already running, exiting")
-        return
-    try:
-        _run_inner(config, scraper_configs, dry_run)
-    finally:
-        _release_pidlock()
-
-
-def _run_inner(config: dict, scraper_configs: dict, dry_run: bool):
-    if dry_run:
-        log.info("DRY RUN - no emails will be sent, seen.json will not be updated")
-
-    # Scrape all sources
+    # Scrape all sources for this profile
     all_listings = []
+    scraper_configs = profile.get("scrapers", {})
+    enabled_count = sum(1 for n in ALL_SCRAPERS if scraper_configs.get(n, {}).get("enabled", False))
+    if enabled_count == 0:
+        log.warning("Profile %s has no enabled scrapers", profile_id)
+        return
+
     for name, scraper_cls in ALL_SCRAPERS.items():
         scraper_cfg = scraper_configs.get(name, {})
-        if not scraper_cfg.get("enabled", True):
-            log.info("Scraper %s is disabled, skipping", name)
+        if not scraper_cfg.get("enabled", False):
             continue
 
         log.info("Running scraper: %s", name)
         try:
-            scraper = scraper_cls(config)
+            scraper = scraper_cls(profile)
             listings = scraper.scrape()
             if len(listings) == 0:
                 log.warning("  %s: returned 0 results - site structure may have changed!", name)
@@ -120,18 +111,19 @@ def _run_inner(config: dict, scraper_configs: dict, dry_run: bool):
             log.exception("  %s: scraper failed", name)
 
     if not all_listings:
-        log.info("No listings found across all scrapers")
+        log.info("No listings found for profile %s", profile_id)
         return
 
-    # Apply filters (disposition, min_size)
-    filtered = _apply_filters(all_listings, config)
+    # Apply filters
+    filtered = _apply_filters(all_listings, profile)
     if len(filtered) < len(all_listings):
         log.info("Filtered: %d -> %d listings", len(all_listings), len(filtered))
     all_listings = filtered
 
-    # Enrich with metro distance
-    for listing in all_listings:
-        enrich_metro(listing)
+    # Enrich with tram distances (only for Prague profiles)
+    if profile.get("tram_enrichment", False):
+        for listing in all_listings:
+            enrich_tram(listing)
 
     # Cross-source dedup
     pre_dedup = len(all_listings)
@@ -141,68 +133,113 @@ def _run_inner(config: dict, scraper_configs: dict, dry_run: bool):
 
     # Compute scores
     for listing in all_listings:
-        listing.score = compute_score(listing, config)
+        listing.score = compute_score(listing, profile)
 
-    # Check for price drops BEFORE updating DB
-    price_drops = db.update_prices(all_listings)
+    # Check for price drops
+    price_drops = db.update_prices(profile_id, all_listings)
     for listing, old_price in price_drops:
         listing.price_drop_from = old_price
         log.info("  PRICE DROP: %s | %d -> %d Kc", listing.title[:50], old_price, listing.price)
 
     # Find new listings BEFORE updating DB
-    seen = db.get_seen()
+    seen = db.get_seen(profile_id)
     new_listings = [l for l in all_listings if l.id not in seen]
-
-    # Price drops on existing (not new) listings
     price_drop_listings = [l for l, _ in price_drops if l.id not in {n.id for n in new_listings}]
 
-    # Detect disappeared listings
+    # Detect disappeared (requires 3+ consecutive misses to filter API noise)
     current_ids = {l.id for l in all_listings}
-    disappeared = db.get_disappeared(current_ids)
+    db.update_miss_counts(profile_id, current_ids)
+    disappeared = db.get_disappeared(profile_id, current_ids)
     if disappeared:
-        log.info("Disappeared: %d listings no longer found", len(disappeared))
+        log.info("Disappeared: %d listings confirmed gone (3+ misses)", len(disappeared))
 
     notable = new_listings + price_drop_listings
     log.info("Total: %d listings, %d new, %d price drops, %d disappeared",
              len(all_listings), len(new_listings), len(price_drops), len(disappeared))
 
-    if not notable and not disappeared:
-        # Still update DB with last_seen timestamps
+    if not notable:
         if not dry_run:
-            db.mark_seen(all_listings)
-        log.info("No new listings or changes to report")
+            db.mark_seen(profile_id, all_listings)
+        if disappeared:
+            log.info("Only disappeared listings (%d) - no email sent", len(disappeared))
+        else:
+            log.info("No new listings or changes to report")
         return
 
     if dry_run:
         for l in new_listings:
-            log.info("  [NEW] score=%d | %s | %d Kc | %s | %s",
-                     l.score, l.disposition or "?", l.price, l.location, l.url)
+            extra = f" | land={l.land_m2}m2" if l.land_m2 else ""
+            log.info("  [NEW] score=%d | %s | %d Kc | %s%s | %s",
+                     l.score, l.disposition or "?", l.price, l.location, extra, l.url)
         for l in price_drop_listings:
-            log.info("  [DROP] %d -> %d Kc | %s | %s",
-                     l.price_drop_from, l.price, l.title[:50], l.url)
+            log.info("  [DROP] %d -> %d Kc | %s", l.price_drop_from, l.price, l.title[:50])
         for d in disappeared[:5]:
-            log.info("  [GONE] %s | %d Kc | %s", d.get("title", "?")[:50], d.get("price", 0), d.get("url", ""))
-        log.info("DRY RUN complete")
+            log.info("  [GONE] %s | %d Kc", d.get("title", "?")[:50], d.get("price", 0))
+        log.info("DRY RUN complete for %s", profile_id)
         return
 
-    # Send email FIRST (before marking seen - if email fails, retry next run)
+    # Determine recipients - profile-level "to" overrides global
+    recipients = profile.get("to", [])
+    if isinstance(recipients, str):
+        recipients = [recipients]
+
+    if not recipients:
+        log.error("Profile %s has no 'to' recipients configured - skipping email", profile_id)
+        db.mark_seen(profile_id, all_listings)
+        return
+
+    # Send email FIRST
     try:
-        send_email(notable, config, disappeared=disappeared)
-        log.info("Email sent with %d new + %d price drops", len(new_listings), len(price_drop_listings))
+        merged_email_cfg = {**email_cfg, "to": recipients}
+        send_email(notable, merged_email_cfg, profile=profile, disappeared=disappeared)
+        log.info("Email sent to %s with %d new + %d price drops",
+                 ", ".join(recipients), len(new_listings), len(price_drop_listings))
     except Exception:
-        log.exception("Failed to send email - listings will be retried next run")
-        return  # Don't mark as seen so they get retried
+        log.exception("Failed to send email for %s - will retry next run", profile_id)
+        return
 
-    # Only mark as seen AFTER successful email
-    db.mark_seen(all_listings)
+    # Mark as seen AFTER successful email
+    db.mark_seen(profile_id, all_listings)
+    db.prune(profile_id, max_age_days=90)
 
-    # Prune old entries periodically
-    db.prune(max_age_days=90)
+
+def run(dry_run: bool = False, profile_filter: str | None = None):
+    config = load_config()
+
+    if not _acquire_pidlock():
+        log.warning("Another instance is already running, exiting")
+        return
+    try:
+        email_cfg = config.get("email", {})
+        profiles = config.get("profiles", {})
+
+        if not profiles:
+            log.error("No profiles defined in config.yaml")
+            return
+
+        for profile_id, profile in profiles.items():
+            if profile_filter and profile_id != profile_filter:
+                continue
+            if not profile.get("enabled", True):
+                log.info("Profile %s is disabled, skipping", profile_id)
+                continue
+
+            if dry_run:
+                log.info("DRY RUN - no emails, no DB updates")
+
+            try:
+                run_profile(profile_id, profile, email_cfg, dry_run)
+            except Exception:
+                log.exception("Profile %s failed", profile_id)
+    finally:
+        _release_pidlock()
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Byt Watchdog - Flat rental monitor")
+    parser = argparse.ArgumentParser(description="Byt Watchdog - Real estate monitor")
     parser.add_argument("--dry-run", action="store_true",
-                        help="Scrape and show results without sending email or updating seen.json")
+                        help="Scrape and show results without sending email or updating DB")
+    parser.add_argument("--profile", type=str, default=None,
+                        help="Run only a specific profile (by ID)")
     args = parser.parse_args()
-    run(dry_run=args.dry_run)
+    run(dry_run=args.dry_run, profile_filter=args.profile)

@@ -29,17 +29,20 @@ if [ ! -f "$SCRIPT_DIR/config.yaml" ]; then
     echo ""
 fi
 
-# Setup cron (uses venv python)
+# Setup cron (all absolute paths so it works from any cwd)
 PYTHON="$VENV_DIR/bin/python"
-CRON_CMD="0 */${CRON_HOURS} * * * cd ${SCRIPT_DIR} && ${PYTHON} main.py >> data/cron.log 2>&1"
+MAIN="$SCRIPT_DIR/main.py"
+LOG="$SCRIPT_DIR/data/cron.log"
+CRON_CMD="0 */${CRON_HOURS} * * * ${PYTHON} ${MAIN} >> ${LOG} 2>&1"
 
-# Remove any existing byt_watchdog cron entries, then add new one
-(crontab -l 2>/dev/null | grep -v "byt_watchdog\|${SCRIPT_DIR}/main.py"; echo "$CRON_CMD") | crontab -
+# Remove any existing entries for this project, then add new one
+EXISTING=$(crontab -l 2>/dev/null | grep -v "$MAIN" || true)
+printf '%s\n%s\n' "$EXISTING" "$CRON_CMD" | sed '/^$/d' | crontab -
 
 echo ""
 echo "Cron job installed: every ${CRON_HOURS} hours"
-echo "  ${CRON_CMD}"
+crontab -l | grep "$MAIN"
 echo ""
-echo "To test manually: cd ${SCRIPT_DIR} && ${PYTHON} main.py"
-echo "To view logs:     tail -f ${SCRIPT_DIR}/data/cron.log"
-echo "To remove cron:   crontab -l | grep -v '${SCRIPT_DIR}/main.py' | crontab -"
+echo "To test manually: ${PYTHON} ${MAIN} --dry-run"
+echo "To view logs:     tail -f ${LOG}"
+echo "To remove cron:   crontab -l | grep -v '$MAIN' | crontab -"

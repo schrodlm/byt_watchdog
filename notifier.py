@@ -4,10 +4,11 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate, make_msgid
 from html import escape
+from urllib.parse import quote as url_quote
 
 from scrapers.base import Listing
 
-NBSP = "\u00a0"  # Non-breaking space (works in both HTML and plain text)
+NBSP = "\u00a0"
 
 
 def _safe_url(url: str) -> str:
@@ -17,7 +18,6 @@ def _safe_url(url: str) -> str:
 
 
 def _format_price(price: int, is_rent: bool) -> str:
-    """Format price with non-breaking spaces as thousand separator + Kč."""
     formatted = f"{price:,}".replace(",", NBSP)
     if is_rent:
         return f"{formatted}{NBSP}Kč/měsíc"
@@ -25,135 +25,198 @@ def _format_price(price: int, is_rent: bool) -> str:
 
 
 def _format_price_plain(price: int, is_rent: bool) -> str:
-    """Format price for plain text (regular spaces)."""
     formatted = f"{price:,}".replace(",", " ")
     if is_rent:
         return f"{formatted} Kč/měsíc"
     return f"{formatted} Kč"
 
 
+def _urgency_label(listing: Listing) -> str:
+    if listing.urgency == "hot":
+        return (
+            '<span style="display:inline-block;padding:3px 10px;border-radius:4px;'
+            'font-size:12px;font-weight:700;background:#1a8917;color:#ffffff;'
+            'margin-right:4px;">Doporučujeme</span>'
+        )
+    elif listing.score >= 50:
+        return (
+            '<span style="display:inline-block;padding:3px 10px;border-radius:4px;'
+            'font-size:12px;font-weight:600;background:#e8a317;color:#ffffff;'
+            'margin-right:4px;">Možná se podívejte</span>'
+        )
+    return ""
+
+
+def _maps_link(listing: Listing) -> str:
+    if listing.location:
+        query = url_quote(f"{listing.location}, Praha, Česko")
+        url = f"https://maps.google.com/?q={query}"
+        return (
+            f'<a href="{escape(url, quote=True)}" style="display:inline-block;'
+            f'padding:6px 12px;margin-right:6px;font-size:12px;color:#1a73e8;'
+            f'text-decoration:none;border:1px solid #dadce0;border-radius:4px;">'
+            f'Mapa</a>'
+        )
+    elif listing.lat is not None and listing.lon is not None:
+        url = f"https://maps.google.com/?q={listing.lat},{listing.lon}"
+        return (
+            f'<a href="{escape(url, quote=True)}" style="display:inline-block;'
+            f'padding:6px 12px;margin-right:6px;font-size:12px;color:#1a73e8;'
+            f'text-decoration:none;border:1px solid #dadce0;border-radius:4px;">'
+            f'Mapa</a>'
+        )
+    return ""
+
+
 def _render_card(listing: Listing, is_rent: bool) -> str:
-    source = escape(listing.source)
     title = escape(listing.title)
-    location = escape(listing.location)
-    disposition = escape(listing.disposition) if listing.disposition else ""
     url = _safe_url(listing.url)
+    disposition = escape(listing.disposition) if listing.disposition else ""
 
     badge_colors = {
         "sreality": ("background:#e8f0fe;color:#1a73e8;", "Sreality"),
         "bezrealitky": ("background:#fce8e6;color:#d93025;", "Bezrealitky"),
         "remax": ("background:#e6f4ea;color:#1e8e3e;", "RE/MAX"),
+        "idnes": ("background:#fff3e0;color:#e65100;", "Idnes"),
     }
-    badge_style, badge_label = badge_colors.get(listing.source, ("background:#eee;color:#333;", source))
+    badge_style, badge_label = badge_colors.get(
+        listing.source, ("background:#eeeeee;color:#333333;", escape(listing.source)))
 
-    # Image - natural aspect ratio, constrained width, no clipping
+    # Image
     img_html = ""
     if listing.image_url:
         img_url = _safe_url(listing.image_url)
         alt_text = escape(f"{listing.title} - {listing.disposition or ''} {listing.location}".strip(" -"))
         img_html = (
             f'<div style="width:100%;background:#f0f0f0;">'
-            f'<img src="{img_url}" alt="{alt_text}" width="660" '
-            f'style="width:100%;max-width:660px;height:auto;display:block;border:0;" />'
+            f'<img src="{img_url}" alt="{alt_text}" '
+            f'style="width:100%;height:auto;display:block;border:0;" />'
             f'</div>'
         )
 
-    # Price
+    # Hero numbers: price on left, size/disposition on right (table for Outlook compat)
     price_str = _format_price(listing.price, is_rent)
-    price_html = f'<div style="font-size:20px;font-weight:700;color:#1a8917;margin-bottom:8px;">{price_str}'
+    right_parts = []
+    if disposition:
+        right_parts.append(disposition)
+    if listing.size_m2:
+        right_parts.append(f"{listing.size_m2}{NBSP}m²")
+    if not is_rent and listing.land_m2:
+        land_str = f"{listing.land_m2:,}".replace(",", NBSP)
+        right_parts.append(f"pozemek {land_str}{NBSP}m²")
+    right_col = " · ".join(right_parts)
 
+    # Total cost for rentals (rent + charges)
+    price_detail = ""
+    if listing.charges and is_rent:
+        total = listing.price + listing.charges
+        total_str = _format_price(total, is_rent)
+        charges_str = f"{listing.charges:,}".replace(",", NBSP)
+        price_str = total_str
+        price_detail = (
+            f'<div style="font-size:12px;color:#888888;margin-bottom:4px;">'
+            f'nájemné {_format_price(listing.price, True)} + poplatky {charges_str}{NBSP}Kč</div>'
+        )
+
+    # Price drop
+    drop_html = ""
     if listing.price_drop_from:
         old_price = _format_price(listing.price_drop_from, is_rent)
         savings = listing.price_drop_from - listing.price
         savings_str = f"{savings:,}".replace(",", NBSP)
-        price_html += (
-            f' <span style="font-size:13px;color:#d93025;font-weight:600;">'
-            f'SLEVA z {old_price} (-{savings_str}{NBSP}Kč)</span>'
+        drop_html = (
+            f'<div style="font-size:13px;color:#d93025;font-weight:600;margin-bottom:4px;">'
+            f'SLEVA z {old_price} (−{savings_str}{NBSP}Kč)</div>'
         )
 
-    if listing.charges and is_rent:
-        charges_str = f"{listing.charges:,}".replace(",", NBSP)
-        price_html += f' <span style="font-size:13px;color:#888;">+{NBSP}{charges_str} poplatky</span>'
-
-    price_html += '</div>'
-
-    # Details
-    details = []
-    if disposition:
-        details.append(disposition)
-    if listing.size_m2:
-        details.append(f"{listing.size_m2}{NBSP}m&sup2;")
-        if is_rent and listing.size_m2 > 0:
-            ppm2 = round(listing.price / listing.size_m2)
-            details.append(f"{ppm2}{NBSP}Kč/m&sup2;")
-    if listing.land_m2:
-        land_str = f"{listing.land_m2:,}".replace(",", NBSP)
-        details.append(f"pozemek {land_str}{NBSP}m&sup2;")
-    if location:
-        details.append(location)
-
+    # Detail chips (pill-style tags that wrap on mobile)
+    chips = []
+    if listing.size_m2 and is_rent:
+        ppm2 = round(listing.price / listing.size_m2)
+        chips.append(f"{ppm2}{NBSP}Kč/m²")
+    if listing.location:
+        chips.append(escape(listing.location))
     if listing.nearest_stop and listing.stop_distance_m is not None:
         if listing.stop_distance_m < 1000:
-            stop_str = f"{escape(listing.nearest_stop)} ({listing.stop_distance_m}{NBSP}m)"
+            chips.append(f"{escape(listing.nearest_stop)} ({listing.stop_distance_m}{NBSP}m)")
         else:
-            stop_str = f"{escape(listing.nearest_stop)} ({listing.stop_distance_m / 1000:.1f}{NBSP}km)"
-        details.append(stop_str)
+            chips.append(f"{escape(listing.nearest_stop)} ({listing.stop_distance_m / 1000:.1f}{NBSP}km)")
 
-    details_html = " &middot; ".join(
-        f'<span style="display:inline-block;margin-right:4px;">{d}</span>' for d in details
+    chips_html = " ".join(
+        f'<span style="display:inline-block;padding:2px 8px;margin:2px 2px;'
+        f'background:#f5f5f5;border-radius:12px;font-size:12px;color:#555555;'
+        f'white-space:nowrap;">{c}</span>'
+        for c in chips
     )
 
-    # Score badge
-    score_html = ""
-    if listing.score > 0:
-        if listing.score >= 70:
-            score_color = "#1a8917"
-        elif listing.score >= 40:
-            score_color = "#e8a317"
-        else:
-            score_color = "#888"
-        score_html = (
-            f'<span style="display:inline-block;padding:2px 8px;border-radius:4px;'
-            f'font-size:11px;font-weight:700;background:{score_color};color:#fff;margin-right:4px;">'
-            f'{listing.score}%</span>'
-        )
-
-    # Cross-source badge
+    # Cross-source
     cross_html = ""
     if listing.cross_source:
         sites = ", ".join(listing.cross_source)
         cross_html = (
-            f'<span style="display:inline-block;padding:2px 8px;border-radius:4px;'
-            f'font-size:11px;background:#f0f0f0;color:#555;margin-right:4px;">'
+            f'<span style="display:inline-block;padding:2px 8px;margin:2px 2px;'
+            f'background:#f0f0f0;border-radius:12px;font-size:11px;color:#555555;">'
             f'také na: {escape(sites)}</span>'
         )
 
-    # Maps link - prefer address search for accuracy (GPS from some sources is approximate)
-    maps_html = ""
-    if listing.location:
-        from urllib.parse import quote as url_quote
-        maps_query = url_quote(f"{listing.location}, Praha, Česko")
-        maps_url = f"https://maps.google.com/?q={maps_query}"
-        maps_html = f' <a href="{escape(maps_url, quote=True)}" style="font-size:12px;color:#1a73e8;text-decoration:none;">[mapa]</a>'
-    elif listing.lat is not None and listing.lon is not None:
-        maps_url = f"https://maps.google.com/?q={listing.lat},{listing.lon}"
-        maps_html = f' <a href="{escape(maps_url, quote=True)}" style="font-size:12px;color:#1a73e8;text-decoration:none;">[mapa]</a>'
+    # Urgency label + source badge
+    urgency_html = _urgency_label(listing)
+    source_badge = (
+        f'<span style="display:inline-block;padding:2px 8px;border-radius:4px;'
+        f'font-size:11px;font-weight:600;text-transform:uppercase;{badge_style}">'
+        f'{badge_label}</span>'
+    )
 
-    card_border = "border-left:4px solid #d93025;" if listing.price_drop_from else ""
+    # CTA button + map button
+    cta_html = (
+        f'<a href="{url}" style="display:inline-block;padding:6px 12px;'
+        f'margin-right:6px;background:#1a73e8;color:#ffffff;text-decoration:none;'
+        f'border-radius:4px;font-size:12px;font-weight:600;">Zobrazit detail</a>'
+    )
+    map_html = _maps_link(listing)
+
+    # Card border
+    card_border = ""
+    if listing.urgency == "hot":
+        card_border = "border-left:4px solid #1a8917;"
+    elif listing.price_drop_from:
+        card_border = "border-left:4px solid #d93025;"
 
     return f"""
-    <div style="background:#fff;border-radius:8px;overflow:hidden;margin-bottom:16px;border:1px solid #e0e0e0;{card_border}">
+    <div style="background:#ffffff;border-radius:8px;overflow:hidden;margin-bottom:16px;border:1px solid #e0e0e0;{card_border}">
       {img_html}
-      <div style="padding:16px;">
-        <div style="font-size:16px;font-weight:600;margin:0 0 8px;">
-          <a href="{url}" style="color:#1a73e8;text-decoration:none;">{title}</a>{maps_html}
+      <div style="padding:12px 16px;">
+        {urgency_html}{source_badge} {cross_html}
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:8px 0;">
+          <tr>
+            <td style="font-size:20px;font-weight:700;color:#1a8917;vertical-align:bottom;">{price_str}</td>
+            <td style="text-align:right;font-size:16px;font-weight:600;color:#222222;vertical-align:bottom;">{right_col}</td>
+          </tr>
+        </table>
+        {price_detail}{drop_html}
+        <div style="font-size:14px;font-weight:600;margin-bottom:6px;">
+          <a href="{url}" style="color:#1a73e8;text-decoration:none;">{title}</a>
         </div>
-        {price_html}
-        <div style="color:#555;font-size:13px;margin-bottom:8px;">{details_html}</div>
-        {score_html}
-        <span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;text-transform:uppercase;{badge_style}">{badge_label}</span>
-        {cross_html}
+        <div style="margin-bottom:10px;">{chips_html}</div>
+        <div>{cta_html}{map_html}</div>
       </div>
+    </div>"""
+
+
+def _render_compact_card(listing: Listing, is_rent: bool) -> str:
+    """Minimal single-row card for low-score listings (no image)."""
+    title = escape(listing.title)
+    url = _safe_url(listing.url)
+    price_str = _format_price(listing.price, is_rent)
+    disp = escape(listing.disposition) if listing.disposition else ""
+    size = f"{listing.size_m2}{NBSP}m²" if listing.size_m2 else ""
+    info = f"{disp} {size}".strip()
+
+    return f"""
+    <div style="padding:10px 16px;border-bottom:1px solid #eeeeee;font-size:13px;">
+      <a href="{url}" style="color:#1a73e8;text-decoration:none;font-weight:600;">{title}</a>
+      <span style="color:#1a8917;font-weight:700;margin-left:8px;">{price_str}</span>
+      <span style="color:#888888;margin-left:8px;">{info}</span>
     </div>"""
 
 
@@ -167,19 +230,38 @@ def _render_disappeared_section(disappeared: list[dict], is_rent: bool) -> str:
         url = _safe_url(d.get("url", ""))
         price_str = _format_price(price, is_rent) if price else "?"
         rows.append(
-            f'<div style="padding:8px 0;border-bottom:1px solid #eee;font-size:13px;">'
-            f'<a href="{url}" style="color:#999;text-decoration:line-through;">{title}</a>'
-            f' - {price_str}</div>'
+            f'<div style="padding:8px 0;border-bottom:1px solid #eeeeee;font-size:13px;">'
+            f'<a href="{url}" style="color:#999999;text-decoration:line-through;">{title}</a>'
+            f' − {price_str}</div>'
         )
-    extra = f'<div style="color:#999;font-size:12px;margin-top:8px;">...a dalších {len(disappeared) - 10}</div>' if len(disappeared) > 10 else ''
+    extra = f'<div style="color:#999999;font-size:12px;margin-top:8px;">...a dalších {len(disappeared) - 10}</div>' if len(disappeared) > 10 else ''
     return f"""
-    <div style="margin-top:24px;padding:16px;background:#fff;border-radius:8px;border:1px solid #e0e0e0;">
+    <div style="margin-top:24px;padding:16px;background:#ffffff;border-radius:8px;border:1px solid #e0e0e0;">
       <div style="font-size:16px;font-weight:600;color:#d93025;margin-bottom:12px;">
         Zmizelo {len(disappeared)} nabídek
       </div>
-      {''.join(rows)}
-      {extra}
+      {''.join(rows)}{extra}
     </div>"""
+
+
+def _render_listings_grouped(listings: list[Listing], is_rent: bool) -> str:
+    """Render listings grouped by urgency tier with section headers."""
+    hot = [l for l in listings if l.urgency == "hot"]
+    normal = [l for l in listings if l.urgency == "normal"]
+    low = [l for l in listings if l.urgency == "low"]
+
+    html = ""
+    if hot:
+        html += '<div style="font-size:14px;font-weight:700;color:#1a8917;margin:16px 0 8px;padding-bottom:4px;border-bottom:2px solid #1a8917;">Nejlepší nabídky</div>'
+        html += "\n".join(_render_card(l, is_rent) for l in hot)
+    if normal:
+        if hot:
+            html += '<div style="font-size:14px;font-weight:600;color:#555555;margin:24px 0 8px;padding-bottom:4px;border-bottom:1px solid #dddddd;">Další nabídky</div>'
+        html += "\n".join(_render_card(l, is_rent) for l in normal)
+    if low:
+        html += '<div style="font-size:14px;color:#999999;margin:24px 0 8px;padding-bottom:4px;border-bottom:1px solid #eeeeee;">Ostatní</div>'
+        html += "\n".join(_render_compact_card(l, is_rent) for l in low)
+    return html
 
 
 def send_email(listings: list[Listing], email_cfg: dict, profile: dict | None = None,
@@ -194,12 +276,14 @@ def send_email(listings: list[Listing], email_cfg: dict, profile: dict | None = 
     # Sort by score descending
     listings = sorted(listings, key=lambda l: l.score, reverse=True)
 
-    cards_html = "\n".join(_render_card(l, is_rent) for l in listings)
+    cards_html = _render_listings_grouped(listings, is_rent)
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     disappeared_html = _render_disappeared_section(disappeared or [], is_rent)
 
     new_count = sum(1 for l in listings if not l.price_drop_from)
     drop_count = sum(1 for l in listings if l.price_drop_from)
+    hot_count = sum(1 for l in listings if l.urgency == "hot")
+
     subtitle_parts = []
     if new_count:
         subtitle_parts.append(f"{new_count} nových")
@@ -207,30 +291,53 @@ def send_email(listings: list[Listing], email_cfg: dict, profile: dict | None = 
         subtitle_parts.append(f"{drop_count} slev")
     subtitle = ", ".join(subtitle_parts) + f" ({now})"
 
-    # Subject line - distinguish new vs drops
+    # Subject line: count + cheapest price
     subject_parts = []
     if new_count:
-        subject_parts.append(f"{new_count} nových nabídek")
+        subject_parts.append(f"{new_count} nových")
     if drop_count:
         subject_parts.append(f"{drop_count} slev")
     subject_detail = ", ".join(subject_parts)
+    cheapest = _format_price_plain(listings[-1].price, is_rent) if listings else ""
+    subject = f"{subject_detail} | {profile_name}"
+    if cheapest and new_count:
+        subject += f" | od {cheapest}"
+
+    # Preheader (hidden preview text for inbox)
+    preheader = ""
+    if hot_count:
+        preheader = f"{hot_count}x Doporučujeme! "
+    if listings:
+        preheader += f"Nejlepší: {listings[0].title[:40]}"
+    preheader_html = (
+        f'<div style="display:none;max-height:0;overflow:hidden;'
+        f'mso-hide:all;font-size:1px;color:#f5f5f5;line-height:1px;">'
+        f'{escape(preheader)}</div>'
+    ) if preheader else ""
 
     html = f"""<!DOCTYPE html>
 <html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{escape(profile_name)}</title></head>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
+<title>{escape(profile_name)}</title>
+</head>
 <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5;margin:0;padding:20px;">
+{preheader_html}
 <div style="max-width:700px;margin:0 auto;">
-  <h1 style="color:#1a1a1a;font-size:22px;margin-bottom:4px;">{escape(profile_name)}</h1>
-  <p style="color:#666;font-size:14px;margin-bottom:24px;">{subtitle}</p>
+  <h1 style="color:#222222;font-size:22px;margin-bottom:4px;">{escape(profile_name)}</h1>
+  <p style="color:#666666;font-size:14px;margin-bottom:24px;">{subtitle}</p>
   {cards_html}
   {disappeared_html}
-  <p style="text-align:center;color:#999;font-size:12px;margin-top:24px;">Byt Watchdog</p>
+  <p style="text-align:center;color:#999999;font-size:12px;margin-top:24px;">Byt Watchdog</p>
 </div>
 </body>
 </html>"""
 
     msg = MIMEMultipart("alternative")
-    msg["Subject"] = f"{profile_name}: {subject_detail}"
+    msg["Subject"] = subject
     msg["From"] = email_cfg["from"]
     msg["Date"] = formatdate(localtime=True)
     msg["Message-ID"] = make_msgid(domain="byt-watchdog")
@@ -244,6 +351,8 @@ def send_email(listings: list[Listing], email_cfg: dict, profile: dict | None = 
     plain_lines = [f"{profile_name} - {subtitle}\n"]
     for l in listings:
         extras = []
+        if l.urgency == "hot":
+            extras.append("DOPORUCUJEME")
         if l.price_drop_from:
             extras.append(f"SLEVA z {_format_price_plain(l.price_drop_from, is_rent)}")
         if l.land_m2:

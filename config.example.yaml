@@ -21,28 +21,35 @@ profiles:
       - "partner@gmail.com"
 
     search:
-      offer_type: rent          # rent | sale
-      estate_type: flat         # flat | house | land | cottage
+      offer_type: rent
+      estate_type: flat
       min_price: 0
       max_price: 25000
       dispositions: []          # e.g. ["2+kk", "2+1"] - empty means all
       min_size_m2: 0
 
+    urgency:
+      hot_threshold: 75         # score >= 75 = "Doporučujeme" (green badge, highlighted card)
+      low_threshold: 30         # score < 30 = compact card (no image)
+
     scrapers:
       sreality:
         enabled: true
-        category_main_cb: 1       # 1=byty
-        category_type_cb: 2       # 2=pronajem
-        locality_district_id: 5007  # Praha 7
+        category_main_cb: 1
+        category_type_cb: 2
+        locality_district_id: 5007
       bezrealitky:
         enabled: true
         estate_type: "BYT"
         offer_type: "PRONAJEM"
-        region_osm_id: "R20000064250"  # Praha 7
+        region_osm_id: "R20000064250"
         osm_value: "Praha 7, obvod Praha 7, Hlavni mesto Praha, Praha, Cesko"
       remax:
         enabled: true
         search_url: "https://www.remax-czech.cz/reality/vyhledavani/?hledani=2&price_from={min_price}&price_to={max_price}&regions%5B19%5D%5B78%5D=on&types%5B4%5D=on"
+      idnes:
+        enabled: true
+        search_path: "/s/pronajem/byty/praha-7/"
 
     scoring:
       price_per_m2_weight: 40
@@ -60,7 +67,7 @@ profiles:
         - "Letna"
         - "Bubenec"
 
-    tram_enrichment: true       # Only for Prague profiles
+    tram_enrichment: true
 
   # Profile 2: Domazlice houses/cottages for sale
   domazlice-domy:
@@ -71,39 +78,46 @@ profiles:
 
     search:
       offer_type: sale
-      estate_type: house        # house | cottage | land
+      estate_type: house
       min_price: 0
       max_price: 5000000
       dispositions: []
       min_size_m2: 0
-      min_land_m2: 500          # Minimum land/plot area
+      min_land_m2: 500
+
+    urgency:
+      hot_threshold: 75
+      low_threshold: 30
 
     scrapers:
       sreality:
         enabled: true
-        category_main_cb: 2       # 2=domy
-        category_type_cb: 1       # 1=prodej
-        locality_district_id: 8   # Domazlicky okres
-        category_sub_cb: "37|43|44"  # rodinne domy + chalupy + zemedelske usedlosti
+        category_main_cb: 2
+        category_type_cb: 1
+        locality_district_id: 8
+        category_sub_cb: "37|43|44"
       bezrealitky:
         enabled: true
         estate_type: "DUM"
         offer_type: "PRODEJ"
-        region_osm_id: "R441864"   # Okres Domazlice
+        region_osm_id: "R441864"
         osm_value: "Domazlice"
       remax:
         enabled: true
         search_url: "https://www.remax-czech.cz/reality/vyhledavani/?hledani=1&price_from={min_price}&price_to={max_price}&types%5B6%5D=on&types%5B10%5D=on&regions%5B43%5D%5B3402%5D=on"
+      idnes:
+        enabled: true
+        search_path: "/s/prodej/domy/okres-domazlice/"
 
     scoring:
-      price_per_m2_weight: 0      # Not relevant for houses
+      price_per_m2_weight: 0
       disposition_weight: 0
       preferred_dispositions: []
       size_weight: 30
       ideal_size_m2: 150
       neighborhood_weight: 0
       preferred_neighborhoods: []
-      land_weight: 40             # Bigger land = better
+      land_weight: 40
       ideal_land_m2: 2000
-      price_weight: 30            # Lower total price = better
-      max_good_price: 3000000     # Price considered "good"
+      price_weight: 30
+      max_good_price: 3000000

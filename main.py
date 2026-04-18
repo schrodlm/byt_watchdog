@@ -10,6 +10,7 @@ import yaml
 
 import db
 from dedup import cross_source_dedup
+from market import enrich_market_data
 from metro import enrich_tram
 from notifier import send_email
 from scoring import compute_score
@@ -167,18 +168,29 @@ def run_profile(profile_id: str, profile: dict, email_cfg: dict, dry_run: bool =
     if pre_dedup > len(all_listings):
         log.info("Cross-source dedup: %d -> %d listings", pre_dedup, len(all_listings))
 
-    # Compute scores
+    # Compute scores and urgency
+    urgency_cfg = profile.get("urgency", {})
+    hot_threshold = urgency_cfg.get("hot_threshold", 75)
+    low_threshold = urgency_cfg.get("low_threshold", 30)
     for listing in all_listings:
         listing.score = compute_score(listing, profile)
+        if listing.score >= hot_threshold:
+            listing.urgency = "hot"
+        elif listing.score < low_threshold:
+            listing.urgency = "low"
 
-    # Check for price drops
+    # Check for price drops (always mark as hot urgency)
     price_drops = db.update_prices(profile_id, all_listings)
     for listing, old_price in price_drops:
         listing.price_drop_from = old_price
+        listing.urgency = "hot"
         log.info("  PRICE DROP: %s | %d -> %d Kc", listing.title[:50], old_price, listing.price)
 
-    # Find new listings BEFORE updating DB
+    # Market intelligence: boost urgency for listings below market price
     seen = db.get_seen(profile_id)
+    enrich_market_data(all_listings, seen)
+
+    # Find new listings BEFORE updating DB
     new_listings = [l for l in all_listings if l.id not in seen]
     price_drop_listings = [l for l, _ in price_drops if l.id not in {n.id for n in new_listings}]
 

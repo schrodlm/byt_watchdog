@@ -238,11 +238,11 @@ class TestDB:
         assert "test:1" not in db.get_seen("profile_b")
         assert "test:2" in db.get_seen("profile_b")
         assert "test:2" not in db.get_seen("profile_a")
-        # Cleanup
+        # Cleanup (both json and lock files)
         for p in ["profile_a", "profile_b"]:
-            path = db._db_path(p)
-            if os.path.exists(path):
-                os.unlink(path)
+            for path in [db._db_path(p), db._lock_path(p)]:
+                if os.path.exists(path):
+                    os.unlink(path)
 
     def test_price_drop_detection(self):
         import db

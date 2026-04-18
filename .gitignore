@@ -1,5 +1,6 @@
 __pycache__/
 *.pyc
+.pytest_cache/
 data/seen*.json
 data/seen*.json.lock
 data/watchdog.pid

@@ -49,14 +49,17 @@ def _score_badge(listing: Listing) -> str:
 
 
 def _market_chip(listing: Listing) -> str:
-    """Render price percentile as a factual chip, e.g. 'levnější než 73% podobných (~50 m²)'."""
+    """Render price percentile + median as a factual chip."""
     if listing.price_percentile is None or not listing.size_m2:
         return ""
+    text = f"levnější než {listing.price_percentile}% podobných (~{listing.size_m2}{NBSP}m²)"
+    if listing.market_median:
+        median_str = f"{listing.market_median:,}".replace(",", NBSP)
+        text += f" · medián {median_str}{NBSP}Kč"
     return (
         f'<span style="display:inline-block;padding:2px 8px;margin:2px 2px;'
         f'background:#e8f5e9;border-radius:12px;font-size:12px;color:#2e7d32;'
-        f'white-space:nowrap;">levnější než {listing.price_percentile}%'
-        f' podobných (~{listing.size_m2}{NBSP}m²)</span>'
+        f'white-space:nowrap;">{text}</span>'
     )
 
 

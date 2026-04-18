@@ -29,8 +29,9 @@ class SrealityScraper(BaseScraper):
             return []
 
         listings = []
+        seen_ids = set()
         page = 1
-        per_page = 60
+        per_page = 500  # Fetch all in one request to avoid pagination randomness
 
         while True:
             params = {
@@ -65,8 +66,9 @@ class SrealityScraper(BaseScraper):
 
             for e in estates:
                 hash_id = e.get("hash_id")
-                if not hash_id:
+                if not hash_id or hash_id in seen_ids:
                     continue
+                seen_ids.add(hash_id)
 
                 price = e.get("price", 0)
                 if self.max_price > 0 and (price > self.max_price or price < self.min_price):

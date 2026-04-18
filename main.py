@@ -239,7 +239,7 @@ def run_profile(profile_id: str, profile: dict, email_cfg: dict, dry_run: bool =
     # Send email FIRST
     try:
         merged_email_cfg = {**email_cfg, "to": recipients}
-        send_email(notable, merged_email_cfg, profile=profile, disappeared=disappeared)
+        send_email(notable, merged_email_cfg, profile=profile, disappeared=disappeared, all_seen=seen)
         log.info("Email sent to %s with %d new + %d price drops",
                  ", ".join(recipients), len(new_listings), len(price_drop_listings))
     except Exception:

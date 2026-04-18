@@ -81,10 +81,15 @@ def compute_avg_time_on_market(all_seen: dict) -> float | None:
 
 
 def enrich_market_data(listings: list[Listing], all_seen: dict) -> None:
-    """Add market position data to listings (modifies in place via score adjustment)."""
+    """Add market position data to each listing."""
     for listing in listings:
         position = compute_price_position(listing, all_seen)
-        if position and position["percentile"] >= 75:
-            # This listing is cheaper than 75%+ of similar listings - boost urgency
-            if listing.urgency != "hot" and listing.score >= 50:
-                listing.urgency = "hot"
+        if not position:
+            continue
+
+        listing.price_percentile = position["percentile"]
+        listing.market_median = position["median"]
+
+        # Boost urgency for listings well below market
+        if position["percentile"] >= 75 and listing.urgency != "hot" and listing.score >= 50:
+            listing.urgency = "hot"

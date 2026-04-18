@@ -31,20 +31,33 @@ def _format_price_plain(price: int, is_rent: bool) -> str:
     return f"{formatted} Kč"
 
 
-def _urgency_label(listing: Listing) -> str:
-    if listing.urgency == "hot":
-        return (
-            '<span style="display:inline-block;padding:3px 10px;border-radius:4px;'
-            'font-size:12px;font-weight:700;background:#1a8917;color:#ffffff;'
-            'margin-right:4px;">Doporučujeme</span>'
-        )
-    elif listing.score >= 50:
-        return (
-            '<span style="display:inline-block;padding:3px 10px;border-radius:4px;'
-            'font-size:12px;font-weight:600;background:#e8a317;color:#ffffff;'
-            'margin-right:4px;">Možná se podívejte</span>'
-        )
-    return ""
+def _score_badge(listing: Listing) -> str:
+    """Render score as a simple colored number - no marketing words."""
+    if listing.score <= 0:
+        return ""
+    if listing.score >= 70:
+        color = "#1a8917"
+    elif listing.score >= 40:
+        color = "#e8a317"
+    else:
+        color = "#888888"
+    return (
+        f'<span style="display:inline-block;padding:3px 8px;border-radius:4px;'
+        f'font-size:12px;font-weight:700;background:{color};color:#ffffff;'
+        f'margin-right:4px;">{listing.score}%</span>'
+    )
+
+
+def _market_chip(listing: Listing) -> str:
+    """Render price percentile as a factual chip, e.g. 'levnější než 73% 2+kk'."""
+    if listing.price_percentile is None or not listing.disposition:
+        return ""
+    return (
+        f'<span style="display:inline-block;padding:2px 8px;margin:2px 2px;'
+        f'background:#e8f5e9;border-radius:12px;font-size:12px;color:#2e7d32;'
+        f'white-space:nowrap;">levnější než {listing.price_percentile}%'
+        f' {escape(listing.disposition)}</span>'
+    )
 
 
 def _maps_link(listing: Listing) -> str:
@@ -159,8 +172,9 @@ def _render_card(listing: Listing, is_rent: bool) -> str:
             f'také na: {escape(sites)}</span>'
         )
 
-    # Urgency label + source badge
-    urgency_html = _urgency_label(listing)
+    # Score badge + market data + source badge
+    score_html = _score_badge(listing)
+    market_html = _market_chip(listing)
     source_badge = (
         f'<span style="display:inline-block;padding:2px 8px;border-radius:4px;'
         f'font-size:11px;font-weight:600;text-transform:uppercase;{badge_style}">'
@@ -186,7 +200,7 @@ def _render_card(listing: Listing, is_rent: bool) -> str:
     <div style="background:#ffffff;border-radius:8px;overflow:hidden;margin-bottom:16px;border:1px solid #e0e0e0;{card_border}">
       {img_html}
       <div style="padding:12px 16px;">
-        {urgency_html}{source_badge} {cross_html}
+        {score_html}{source_badge} {cross_html}
         <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:8px 0;">
           <tr>
             <td style="font-size:20px;font-weight:700;color:#1a8917;vertical-align:bottom;">{price_str}</td>
@@ -197,7 +211,7 @@ def _render_card(listing: Listing, is_rent: bool) -> str:
         <div style="font-size:14px;font-weight:600;margin-bottom:6px;">
           <a href="{url}" style="color:#1a73e8;text-decoration:none;">{title}</a>
         </div>
-        <div style="margin-bottom:10px;">{chips_html}</div>
+        <div style="margin-bottom:10px;">{chips_html}{market_html}</div>
         <div>{cta_html}{map_html}</div>
       </div>
     </div>"""
@@ -244,28 +258,65 @@ def _render_disappeared_section(disappeared: list[dict], is_rent: bool) -> str:
     </div>"""
 
 
+def _render_market_summary(listings: list[Listing], all_seen: dict, is_rent: bool) -> str:
+    """Render a brief market summary footer with factual stats."""
+    from market import compute_avg_time_on_market
+
+    # Group current listings by disposition
+    by_disp: dict[str, list[int]] = {}
+    for l in listings:
+        if l.disposition and l.price:
+            by_disp.setdefault(l.disposition, []).append(l.price)
+
+    lines = []
+    for disp in sorted(by_disp, key=lambda d: len(by_disp[d]), reverse=True)[:3]:
+        prices = sorted(by_disp[disp])
+        median = prices[len(prices) // 2]
+        median_str = f"{median:,}".replace(",", NBSP)
+        unit = "Kč/měsíc" if is_rent else "Kč"
+        lines.append(f"{escape(disp)}: medián {median_str}{NBSP}{unit} ({len(prices)} nabídek)")
+
+    avg_days = compute_avg_time_on_market(all_seen)
+
+    if not lines and avg_days is None:
+        return ""
+
+    parts = []
+    if lines:
+        parts.append(" · ".join(lines))
+    if avg_days is not None:
+        parts.append(f"Průměrná doba na trhu: {avg_days} dní")
+
+    content = "<br>".join(parts)
+    return f"""
+    <div style="margin-top:20px;padding:12px 16px;background:#fafafa;border-radius:8px;border:1px solid #e0e0e0;font-size:12px;color:#666666;">
+      {content}
+    </div>"""
+
+
 def _render_listings_grouped(listings: list[Listing], is_rent: bool) -> str:
-    """Render listings grouped by urgency tier with section headers."""
+    """Render listings grouped by urgency tier with factual section headers."""
     hot = [l for l in listings if l.urgency == "hot"]
     normal = [l for l in listings if l.urgency == "normal"]
     low = [l for l in listings if l.urgency == "low"]
 
     html = ""
     if hot:
-        html += '<div style="font-size:14px;font-weight:700;color:#1a8917;margin:16px 0 8px;padding-bottom:4px;border-bottom:2px solid #1a8917;">Nejlepší nabídky</div>'
+        html += f'<div style="font-size:13px;font-weight:600;color:#1a8917;margin:16px 0 8px;padding-bottom:4px;border-bottom:2px solid #1a8917;">Skóre 75%+ ({len(hot)})</div>'
         html += "\n".join(_render_card(l, is_rent) for l in hot)
     if normal:
-        if hot:
-            html += '<div style="font-size:14px;font-weight:600;color:#555555;margin:24px 0 8px;padding-bottom:4px;border-bottom:1px solid #dddddd;">Další nabídky</div>'
+        label = f"Skóre 30–74% ({len(normal)})" if hot else ""
+        if label:
+            html += f'<div style="font-size:13px;font-weight:600;color:#555555;margin:24px 0 8px;padding-bottom:4px;border-bottom:1px solid #dddddd;">{label}</div>'
         html += "\n".join(_render_card(l, is_rent) for l in normal)
     if low:
-        html += '<div style="font-size:14px;color:#999999;margin:24px 0 8px;padding-bottom:4px;border-bottom:1px solid #eeeeee;">Ostatní</div>'
+        html += f'<div style="font-size:13px;color:#999999;margin:24px 0 8px;padding-bottom:4px;border-bottom:1px solid #eeeeee;">Skóre pod 30% ({len(low)})</div>'
         html += "\n".join(_render_compact_card(l, is_rent) for l in low)
     return html
 
 
 def send_email(listings: list[Listing], email_cfg: dict, profile: dict | None = None,
-               disappeared: list[dict] | None = None) -> None:
+               disappeared: list[dict] | None = None, all_seen: dict | None = None) -> None:
     if not listings:
         return
 
@@ -279,6 +330,7 @@ def send_email(listings: list[Listing], email_cfg: dict, profile: dict | None = 
     cards_html = _render_listings_grouped(listings, is_rent)
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     disappeared_html = _render_disappeared_section(disappeared or [], is_rent)
+    market_html = _render_market_summary(listings, all_seen or {}, is_rent)
 
     new_count = sum(1 for l in listings if not l.price_drop_from)
     drop_count = sum(1 for l in listings if l.price_drop_from)
@@ -305,10 +357,11 @@ def send_email(listings: list[Listing], email_cfg: dict, profile: dict | None = 
 
     # Preheader (hidden preview text for inbox)
     preheader = ""
-    if hot_count:
-        preheader = f"{hot_count}x Doporučujeme! "
     if listings:
-        preheader += f"Nejlepší: {listings[0].title[:40]}"
+        top = listings[0]
+        preheader = f"Top: {top.score}% | {_format_price_plain(top.price, is_rent)}"
+        if top.disposition:
+            preheader += f" | {top.disposition}"
     preheader_html = (
         f'<div style="display:none;max-height:0;overflow:hidden;'
         f'mso-hide:all;font-size:1px;color:#f5f5f5;line-height:1px;">'
@@ -331,6 +384,7 @@ def send_email(listings: list[Listing], email_cfg: dict, profile: dict | None = 
   <p style="color:#666666;font-size:14px;margin-bottom:24px;">{subtitle}</p>
   {cards_html}
   {disappeared_html}
+  {market_html}
   <p style="text-align:center;color:#999999;font-size:12px;margin-top:24px;">Byt Watchdog</p>
 </div>
 </body>

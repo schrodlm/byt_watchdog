@@ -27,6 +27,9 @@ class Listing:
     nearest_stop: str | None = None
     stop_distance_m: int | None = None
     cross_source: list[str] = field(default_factory=list)
+    # Market intelligence
+    price_percentile: int | None = None   # "cheaper than X% of similar listings"
+    market_median: int | None = None      # Median price for same disposition
 
 
 def get_http_session() -> requests.Session:

@@ -1,3 +1,4 @@
+import re
 import time
 import requests
 from scrapers.base import BaseScraper, Listing
@@ -59,14 +60,14 @@ class SrealityScraper(BaseScraper):
                 # Extract size from name like "Pronajem bytu 2+kk 45 m2"
                 name = e.get("name", "")
                 size = None
-                if "m" in name:
-                    parts = name.split()
-                    for i, p in enumerate(parts):
-                        if p.startswith("m") and i > 0:
-                            try:
-                                size = int(parts[i - 1])
-                            except ValueError:
-                                pass
+                size_match = re.search(r"(\d+)\s*m[2²]", name)
+                if size_match:
+                    size = int(size_match.group(1))
+
+                # Extract GPS
+                gps = e.get("gps", {})
+                lat = gps.get("lat")
+                lon = gps.get("lon")
 
                 detail_url = f"https://www.sreality.cz/detail/pronajem/byt/{disp_label}/{locality_seo}/{hash_id}"
 
@@ -80,6 +81,8 @@ class SrealityScraper(BaseScraper):
                     image_url=image_url,
                     size_m2=size,
                     disposition=disp_label,
+                    lat=lat,
+                    lon=lon,
                 ))
 
             total = data.get("result_size", 0)

@@ -32,7 +32,7 @@ class RemaxScraper(BaseScraper):
             resp.raise_for_status()
             soup = BeautifulSoup(resp.text, "lxml")
 
-            # Find listing cards - RE/MAX uses pl-items or similar listing containers
+            # Find listing cards
             cards = soup.select("div.pl-items__item, article.property-card, div.card-property")
 
             # Fallback: look for links to /reality/detail/
@@ -55,7 +55,6 @@ class RemaxScraper(BaseScraper):
             # Check if there's a next page
             next_link = soup.select_one('a[rel="next"], a.pagination__next, li.next a')
             if not next_link:
-                # Also check if we got fewer results than expected
                 break
 
             page += 1
@@ -66,12 +65,16 @@ class RemaxScraper(BaseScraper):
     def _find_listing_blocks(self, soup: BeautifulSoup) -> list:
         """Find listing blocks by looking for detail links."""
         blocks = []
+        seen_links = set()
         for link in soup.find_all("a", href=re.compile(r"/reality/detail/\d+")):
+            href = link.get("href", "")
+            if href in seen_links:
+                continue
+            seen_links.add(href)
             # Walk up to find a reasonable container
             parent = link.parent
             for _ in range(5):
                 if parent and parent.name in ("div", "article", "li") and parent not in blocks:
-                    # Check if this container has price-like text
                     text = parent.get_text()
                     if "Kc" in text or "Kč" in text or re.search(r"\d[\d\s]+Kc", text):
                         blocks.append(parent)
@@ -90,39 +93,64 @@ class RemaxScraper(BaseScraper):
         href = link.get("href", "")
         detail_url = href if href.startswith("http") else f"https://www.remax-czech.cz{href}"
 
-        # Extract listing ID from URL
-        id_match = re.search(r"/detail/(\d+)/", href)
+        # Extract listing ID from URL (with or without trailing slash)
+        id_match = re.search(r"/detail/(\d+)", href)
         if not id_match:
             return None
         listing_id = id_match.group(1)
 
-        # Title
-        title = ""
-        title_el = card.find(["h2", "h3", "h4"]) or link
-        if title_el:
-            title = title_el.get_text(strip=True)
+        # Prefer structured data-* attributes when available
+        data_price = card.get("data-price")
+        data_title = card.get("data-title")
+        data_address = card.get("data-display-address")
 
-        # Price - look for numbers followed by Kc/Kč
+        # Title - prefer data-title (no agent ID suffix), fallback to h2/h3
+        title = ""
+        if data_title:
+            title = data_title
+        else:
+            title_el = card.find(["h2", "h3", "h4"]) or link
+            if title_el:
+                title = title_el.get_text(strip=True)
+            # Strip agent ID suffix like "(ID 273-NP04902)"
+            title = re.sub(r"\s*\(ID\s+[^)]+\)\s*$", "", title)
+
+        # Price - prefer data-price, fallback to regex
         price = 0
-        card_text = card.get_text()
-        price_match = re.search(r"([\d\s]+)\s*(?:Kc|Kč)", card_text)
-        if price_match:
-            price_str = price_match.group(1).replace(" ", "").replace("\xa0", "")
+        if data_price:
             try:
-                price = int(price_str)
+                price = int(data_price)
             except ValueError:
                 pass
+
+        if not price:
+            card_text = card.get_text()
+            # Tighter regex: require digit-space-digit pattern followed by Kc
+            price_match = re.search(r"(\d[\d\s\xa0]*\d)\s*(?:Kc|Kč)", card_text)
+            if not price_match:
+                # Single digit price (unlikely but safe)
+                price_match = re.search(r"(\d)\s*(?:Kc|Kč)", card_text)
+            if price_match:
+                price_str = price_match.group(1).replace(" ", "").replace("\xa0", "")
+                try:
+                    price = int(price_str)
+                except ValueError:
+                    pass
 
         if price > self.max_price or price < self.min_price or price == 0:
             return None
 
-        # Location - try to find Praha 7 reference
+        # Location - prefer data-display-address
+        card_text = card.get_text()
         location = ""
-        loc_match = re.search(r"Praha\s*\d+\s*[-–]\s*\w+", card_text)
-        if loc_match:
-            location = loc_match.group(0)
-        elif "Praha" in card_text:
-            location = "Praha"
+        if data_address:
+            location = data_address
+        else:
+            loc_match = re.search(r"Praha\s*\d+\s*[-–]\s*\w+", card_text)
+            if loc_match:
+                location = loc_match.group(0)
+            elif "Praha" in card_text:
+                location = "Praha"
 
         # Image
         image_url = None

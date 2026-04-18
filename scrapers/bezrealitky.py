@@ -30,10 +30,7 @@ DETAIL_BASE = "https://www.bezrealitky.cz/nemovitosti-byty-domy"
 
 
 def _apollo_get(obj: dict, prefix: str):
-    """Get value from Apollo cache key that may have parenthesized params.
-
-    E.g. key might be 'address({"locale":"CS"})' - we match by prefix.
-    """
+    """Get value from Apollo cache key that may have parenthesized params."""
     for key, val in obj.items():
         if key == prefix or key.startswith(prefix + "("):
             return val
@@ -113,9 +110,21 @@ class BezrealitkyScraper(BaseScraper):
                     continue
 
                 address = _apollo_get(advert, "address") or ""
+                # Guard against address being a dict (Apollo ref)
+                if isinstance(address, dict):
+                    address = ""
                 disposition_raw = advert.get("disposition", "")
                 disposition = DISPOSITIONS.get(disposition_raw, disposition_raw)
                 surface = advert.get("surface")
+                charges = advert.get("charges")
+
+                # Extract GPS (bezrealitky uses "lng" not "lon")
+                gps = advert.get("gps", {})
+                lat = None
+                lon = None
+                if isinstance(gps, dict):
+                    lat = gps.get("lat")
+                    lon = gps.get("lng")
 
                 # Resolve main image
                 image_url = None
@@ -143,6 +152,9 @@ class BezrealitkyScraper(BaseScraper):
                     image_url=image_url,
                     size_m2=int(surface) if surface else None,
                     disposition=disposition,
+                    lat=lat,
+                    lon=lon,
+                    charges=int(charges) if charges else None,
                 ))
 
             if not page_had_listings or page * 15 >= total_count:

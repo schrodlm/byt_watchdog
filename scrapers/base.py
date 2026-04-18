@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -13,6 +13,14 @@ class Listing:
     image_url: str | None = None
     size_m2: int | None = None
     disposition: str | None = None  # "2+kk", "1+1", etc.
+    lat: float | None = None
+    lon: float | None = None
+    charges: int | None = None      # Additional monthly charges (poplatky)
+    score: int = 0                  # Smart score 0-100
+    price_drop_from: int | None = None  # Previous price if dropped
+    metro_station: str | None = None
+    metro_distance_m: int | None = None
+    cross_source: list[str] = field(default_factory=list)  # Other sources with same flat
 
 
 class BaseScraper(ABC):

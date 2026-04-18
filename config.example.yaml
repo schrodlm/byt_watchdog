@@ -1,6 +1,24 @@
 search:
   min_price: 0
   max_price: 25000
+  dispositions: []            # e.g. ["2+kk", "2+1", "3+kk"] - empty means all
+  min_size_m2: 0              # 0 means no minimum
+
+scoring:
+  price_per_m2_weight: 40     # Lower price/m2 = higher score
+  disposition_weight: 30
+  preferred_dispositions:
+    - "2+kk"
+    - "2+1"
+    - "3+kk"
+    - "1+1"
+  size_weight: 15
+  ideal_size_m2: 55           # Size at which you get full points
+  neighborhood_weight: 15
+  preferred_neighborhoods:
+    - "Holešovice"
+    - "Letná"
+    - "Bubeneč"
 
 scrapers:
   sreality:

@@ -123,16 +123,25 @@ class BezrealitkyScraper(BaseScraper):
                     continue
 
                 address = _apollo_get(advert, "address") or ""
+                # Dereference Apollo ref if needed
+                if isinstance(address, dict) and "__ref" in address:
+                    addr_obj = cache.get(address["__ref"], {})
+                    address = (_apollo_get(addr_obj, "presentationAddress")
+                               or _apollo_get(addr_obj, "streetAddress")
+                               or addr_obj.get("name", "") or "")
                 if isinstance(address, dict):
                     address = ""
+
                 disposition_raw = advert.get("disposition", "")
                 disposition = DISPOSITIONS.get(disposition_raw, disposition_raw or None)
                 surface = advert.get("surface")
                 surface_land = advert.get("surfaceLand")
                 charges = advert.get("charges")
 
-                # GPS (bezrealitky uses "lng" not "lon")
+                # GPS (bezrealitky uses "lng" not "lon") - dereference __ref
                 gps = advert.get("gps", {})
+                if isinstance(gps, dict) and "__ref" in gps:
+                    gps = cache.get(gps["__ref"], {})
                 lat = None
                 lon = None
                 if isinstance(gps, dict):
@@ -168,12 +177,12 @@ class BezrealitkyScraper(BaseScraper):
                     location=address,
                     url=f"{DETAIL_BASE}/{uri}",
                     image_url=image_url,
-                    size_m2=int(surface) if surface else None,
+                    size_m2=int(float(surface)) if surface else None,
                     disposition=disposition if disposition else None,
                     lat=lat,
                     lon=lon,
-                    charges=int(charges) if charges else None,
-                    land_m2=int(surface_land) if surface_land else None,
+                    charges=int(float(charges)) if charges else None,
+                    land_m2=int(float(surface_land)) if surface_land else None,
                 ))
 
             if not page_had_listings or page * 15 >= total_count:

@@ -4,25 +4,32 @@ import requests
 from bs4 import BeautifulSoup
 from scrapers.base import BaseScraper, Listing
 
-SEARCH_URL = (
-    "https://www.remax-czech.cz/reality/vyhledavani/"
-    "?hledani=2"
-    "&price_from={min_price}"
-    "&price_to={max_price}"
-    "&regions%5B19%5D%5B78%5D=on"
-    "&types%5B4%5D=on"
-)
-
 
 class RemaxScraper(BaseScraper):
     name = "remax"
 
+    def _build_url(self) -> str:
+        """Build search URL from profile config or use custom search_url."""
+        cfg = self.scraper_cfg
+        custom_url = cfg.get("search_url")
+        if custom_url:
+            return custom_url.format(
+                min_price=self.min_price,
+                max_price=self.max_price,
+            )
+        # Fallback: should not happen if config is correct
+        return "https://www.remax-czech.cz/reality/vyhledavani/?hledani=1"
+
     def scrape(self) -> list[Listing]:
+        cfg = self.scraper_cfg
+        if not cfg.get("enabled", True):
+            return []
+
         listings = []
         page = 1
 
         while True:
-            url = SEARCH_URL.format(min_price=self.min_price, max_price=self.max_price)
+            url = self._build_url()
             if page > 1:
                 url += f"&stranka={page}"
 
@@ -34,11 +41,8 @@ class RemaxScraper(BaseScraper):
 
             # Find listing cards
             cards = soup.select("div.pl-items__item, article.property-card, div.card-property")
-
-            # Fallback: look for links to /reality/detail/
             if not cards:
                 cards = self._find_listing_blocks(soup)
-
             if not cards:
                 break
 
@@ -52,7 +56,6 @@ class RemaxScraper(BaseScraper):
             if not page_had_listings:
                 break
 
-            # Check if there's a next page
             next_link = soup.select_one('a[rel="next"], a.pagination__next, li.next a')
             if not next_link:
                 break
@@ -63,7 +66,6 @@ class RemaxScraper(BaseScraper):
         return listings
 
     def _find_listing_blocks(self, soup: BeautifulSoup) -> list:
-        """Find listing blocks by looking for detail links."""
         blocks = []
         seen_links = set()
         for link in soup.find_all("a", href=re.compile(r"/reality/detail/\d+")):
@@ -71,7 +73,6 @@ class RemaxScraper(BaseScraper):
             if href in seen_links:
                 continue
             seen_links.add(href)
-            # Walk up to find a reasonable container
             parent = link.parent
             for _ in range(5):
                 if parent and parent.name in ("div", "article", "li") and parent not in blocks:
@@ -84,8 +85,6 @@ class RemaxScraper(BaseScraper):
         return blocks
 
     def _parse_card(self, card) -> Listing | None:
-        """Extract listing data from a card element."""
-        # Find detail link
         link = card.find("a", href=re.compile(r"/reality/detail/\d+"))
         if not link:
             return None
@@ -93,18 +92,17 @@ class RemaxScraper(BaseScraper):
         href = link.get("href", "")
         detail_url = href if href.startswith("http") else f"https://www.remax-czech.cz{href}"
 
-        # Extract listing ID from URL (with or without trailing slash)
         id_match = re.search(r"/detail/(\d+)", href)
         if not id_match:
             return None
         listing_id = id_match.group(1)
 
-        # Prefer structured data-* attributes when available
+        # Prefer data-* attributes
         data_price = card.get("data-price")
         data_title = card.get("data-title")
         data_address = card.get("data-display-address")
 
-        # Title - prefer data-title (no agent ID suffix), fallback to h2/h3
+        # Title
         title = ""
         if data_title:
             title = data_title
@@ -112,10 +110,9 @@ class RemaxScraper(BaseScraper):
             title_el = card.find(["h2", "h3", "h4"]) or link
             if title_el:
                 title = title_el.get_text(strip=True)
-            # Strip agent ID suffix like "(ID 273-NP04902)"
             title = re.sub(r"\s*\(ID\s+[^)]+\)\s*$", "", title)
 
-        # Price - prefer data-price, fallback to regex
+        # Price
         price = 0
         if data_price:
             try:
@@ -125,10 +122,8 @@ class RemaxScraper(BaseScraper):
 
         if not price:
             card_text = card.get_text()
-            # Tighter regex: require digit-space-digit pattern followed by Kc
             price_match = re.search(r"(\d[\d\s\xa0]*\d)\s*(?:Kc|Kč)", card_text)
             if not price_match:
-                # Single digit price (unlikely but safe)
                 price_match = re.search(r"(\d)\s*(?:Kc|Kč)", card_text)
             if price_match:
                 price_str = price_match.group(1).replace(" ", "").replace("\xa0", "")
@@ -137,20 +132,21 @@ class RemaxScraper(BaseScraper):
                 except ValueError:
                     pass
 
-        if price > self.max_price or price < self.min_price or price == 0:
+        if self.max_price > 0 and price > self.max_price:
+            return None
+        if price < self.min_price or price == 0:
             return None
 
-        # Location - prefer data-display-address
         card_text = card.get_text()
+
+        # Location
         location = ""
         if data_address:
             location = data_address
         else:
-            loc_match = re.search(r"Praha\s*\d+\s*[-–]\s*\w+", card_text)
+            loc_match = re.search(r"(?:Praha\s*\d+\s*[-–]\s*\w+|[A-Z][a-záčďéěíňóřšťúůýž]+\s*[-–]\s*\w+)", card_text)
             if loc_match:
                 location = loc_match.group(0)
-            elif "Praha" in card_text:
-                location = "Praha"
 
         # Image
         image_url = None
@@ -165,6 +161,12 @@ class RemaxScraper(BaseScraper):
         size_match = re.search(r"(\d+)\s*m[2²]", card_text)
         if size_match:
             size = int(size_match.group(1))
+
+        # Land area - "pozemek X m2" or "X m² pozemek"
+        land = None
+        land_match = re.search(r"pozemek\s+([\d\s]+)\s*m[2²]", card_text, re.IGNORECASE)
+        if land_match:
+            land = int(land_match.group(1).replace(" ", "").replace("\xa0", ""))
 
         # Disposition
         disposition = None
@@ -182,4 +184,5 @@ class RemaxScraper(BaseScraper):
             image_url=image_url,
             size_m2=size,
             disposition=disposition,
+            land_m2=land,
         )

@@ -7,7 +7,7 @@ class Listing:
     id: str                    # "{source}:{site_id}" e.g. "sreality:942891852"
     source: str                # "sreality" | "bezrealitky" | "remax"
     title: str
-    price: int                 # Monthly rent in CZK
+    price: int                 # Price in CZK (monthly rent or sale price)
     location: str
     url: str                   # Detail page URL
     image_url: str | None = None
@@ -16,20 +16,23 @@ class Listing:
     lat: float | None = None
     lon: float | None = None
     charges: int | None = None      # Additional monthly charges (poplatky)
-    score: int = 0                  # Smart score 0-100
-    price_drop_from: int | None = None  # Previous price if dropped
-    metro_station: str | None = None
-    metro_distance_m: int | None = None
-    cross_source: list[str] = field(default_factory=list)  # Other sources with same flat
+    land_m2: int | None = None      # Land/plot area for houses
+    score: int = 0
+    price_drop_from: int | None = None
+    nearest_stop: str | None = None     # Nearest tram/bus stop with lines
+    stop_distance_m: int | None = None
+    cross_source: list[str] = field(default_factory=list)
 
 
 class BaseScraper(ABC):
     name: str = "base"
 
-    def __init__(self, config: dict):
-        self.config = config
-        self.min_price = config.get("search", {}).get("min_price", 0)
-        self.max_price = config.get("search", {}).get("max_price", 25000)
+    def __init__(self, profile: dict):
+        self.profile = profile
+        search = profile.get("search", {})
+        self.min_price = search.get("min_price", 0)
+        self.max_price = search.get("max_price", 25000)
+        self.scraper_cfg = profile.get("scrapers", {}).get(self.name, {})
 
     @abstractmethod
     def scrape(self) -> list[Listing]:

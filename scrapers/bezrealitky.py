@@ -4,17 +4,7 @@ import time
 import requests
 from scrapers.base import BaseScraper, Listing
 
-SEARCH_URL = (
-    "https://www.bezrealitky.cz/vyhledat"
-    "?currency=CZK"
-    "&estateType=BYT"
-    "&offerType=PRONAJEM"
-    "&osm_value=Praha+7%2C+obvod+Praha+7%2C+Hlavn%C3%AD+m%C4%9Bsto+Praha%2C+Praha%2C+%C4%8Cesko"
-    "&priceFrom={min_price}"
-    "&priceTo={max_price}"
-    "&regionOsmIds=R20000064250"
-    "&location=exact"
-)
+BASE_SEARCH_URL = "https://www.bezrealitky.cz/vyhledat"
 
 # Disposition enum -> human-readable
 DISPOSITIONS = {
@@ -40,12 +30,35 @@ def _apollo_get(obj: dict, prefix: str):
 class BezrealitkyScraper(BaseScraper):
     name = "bezrealitky"
 
+    def _build_url(self) -> str:
+        cfg = self.scraper_cfg
+        params = [
+            f"currency=CZK",
+            f"estateType={cfg.get('estate_type', 'BYT')}",
+            f"offerType={cfg.get('offer_type', 'PRONAJEM')}",
+            f"regionOsmIds={cfg.get('region_osm_id', 'R20000064250')}",
+            f"location=exact",
+        ]
+        osm_value = cfg.get("osm_value")
+        if osm_value:
+            from urllib.parse import quote
+            params.append(f"osm_value={quote(osm_value)}")
+        if self.min_price > 0:
+            params.append(f"priceFrom={self.min_price}")
+        if self.max_price > 0:
+            params.append(f"priceTo={self.max_price}")
+        return BASE_SEARCH_URL + "?" + "&".join(params)
+
     def scrape(self) -> list[Listing]:
+        cfg = self.scraper_cfg
+        if not cfg.get("enabled", True):
+            return []
+
         listings = []
         page = 1
 
         while True:
-            url = SEARCH_URL.format(min_price=self.min_price, max_price=self.max_price)
+            url = self._build_url()
             if page > 1:
                 url += f"&page={page}"
 
@@ -67,7 +80,7 @@ class BezrealitkyScraper(BaseScraper):
             if not cache:
                 break
 
-            # Find the listAdverts result to get total count and refs
+            # Find the listAdverts result
             advert_list = None
             total_count = 0
             for key, val in cache.items():
@@ -77,7 +90,6 @@ class BezrealitkyScraper(BaseScraper):
                         total_count = val.get("totalCount", 0)
                         break
 
-            # Also check ROOT_QUERY for nested listAdverts
             root = cache.get("ROOT_QUERY", {})
             if not advert_list:
                 for key, val in root.items():
@@ -89,7 +101,6 @@ class BezrealitkyScraper(BaseScraper):
             if not advert_list:
                 break
 
-            # Resolve advert refs
             refs = advert_list.get("list", [])
             page_had_listings = False
 
@@ -104,21 +115,23 @@ class BezrealitkyScraper(BaseScraper):
                 uri = advert.get("uri", "")
                 price = advert.get("price", 0)
 
-                if price > self.max_price or price < self.min_price:
+                if self.max_price > 0 and price > self.max_price:
+                    continue
+                if price < self.min_price:
                     continue
                 if advert.get("reserved", False):
                     continue
 
                 address = _apollo_get(advert, "address") or ""
-                # Guard against address being a dict (Apollo ref)
                 if isinstance(address, dict):
                     address = ""
                 disposition_raw = advert.get("disposition", "")
-                disposition = DISPOSITIONS.get(disposition_raw, disposition_raw)
+                disposition = DISPOSITIONS.get(disposition_raw, disposition_raw or None)
                 surface = advert.get("surface")
+                surface_land = advert.get("surfaceLand")
                 charges = advert.get("charges")
 
-                # Extract GPS (bezrealitky uses "lng" not "lon")
+                # GPS (bezrealitky uses "lng" not "lon")
                 gps = advert.get("gps", {})
                 lat = None
                 lon = None
@@ -133,11 +146,16 @@ class BezrealitkyScraper(BaseScraper):
                     img_obj = cache.get(main_img_ref["__ref"], {})
                     image_url = _apollo_get(img_obj, "url")
 
-                title_parts = ["Pronajem"]
+                # Build title
+                estate_type = cfg.get("estate_type", "BYT")
+                offer_label = "Pronajem" if cfg.get("offer_type") == "PRONAJEM" else "Prodej"
+                title_parts = [offer_label]
                 if disposition:
                     title_parts.append(disposition)
                 if surface:
                     title_parts.append(f"{surface} m2")
+                if surface_land:
+                    title_parts.append(f"pozemek {surface_land} m2")
                 if address:
                     title_parts.append(address)
                 title = " - ".join(title_parts)
@@ -151,10 +169,11 @@ class BezrealitkyScraper(BaseScraper):
                     url=f"{DETAIL_BASE}/{uri}",
                     image_url=image_url,
                     size_m2=int(surface) if surface else None,
-                    disposition=disposition,
+                    disposition=disposition if disposition else None,
                     lat=lat,
                     lon=lon,
                     charges=int(charges) if charges else None,
+                    land_m2=int(surface_land) if surface_land else None,
                 ))
 
             if not page_had_listings or page * 15 >= total_count:

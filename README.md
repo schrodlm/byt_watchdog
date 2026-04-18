@@ -1,99 +1,142 @@
 # Byt Watchdog
 
-Automated monitor for rental flats in Praha 7. Scrapes major Czech real estate sites every few hours and emails you only the new listings, ranked by a smart score.
+Multi-profile real estate monitor for the Czech Republic. Scrapes major Czech real estate sites, deduplicates, scores, and emails new listings - supports any combination of location, property type, and offer type.
 
 ## Features
 
+- **Multi-profile**: Run independent searches in parallel (e.g., flats in Praha 7 + houses in Domažlice)
 - **3 sources**: Sreality.cz (API), Bezrealitky.cz (SSR), RE/MAX Czech (HTML)
-- **Smart scoring**: Ranks listings 0-100 based on price/m2, disposition preference, size, and neighborhood
+- **Any property type**: Flats, houses, cottages, land, agricultural estates
+- **Any offer type**: Rent or sale
+- **Any location**: Configurable per profile via district IDs and OSM region IDs
+- **Smart scoring**: 0-100 score with configurable weights (price/m2, disposition, size, land area, neighborhood, total price)
 - **Price drop alerts**: Detects when a listing's price decreases
-- **Disappeared listings**: Tracks when flats are removed (rented out)
-- **Cross-source dedup**: Detects same flat listed on multiple sites
-- **Metro distance**: Shows nearest metro station and walking distance
-- **Price/m2**: Calculated and shown in every listing card
-- **Google Maps links**: One-click map view for each listing
-- **Filters**: By disposition (2+kk, 2+1, etc.), min/max price, min size
-- **HTML emails**: Sorted by score with image cards, sent to multiple recipients
+- **Disappeared listings**: Tracks when properties are removed
+- **Cross-source dedup**: Detects same property listed on multiple sites
+- **Prague tram enrichment**: Nearest tram stop + lines (for Prague profiles)
+- **Google Maps links**: One-click map view per listing
+- **Per-profile DB**: Each profile has its own `seen-{id}.json`
+- **Per-profile recipients**: Different email recipients per search
 
 ## Setup
 
 ```bash
-# Install dependencies
-pip3 install -r requirements.txt
-
-# Create your config
-cp config.example.yaml config.yaml
-# Edit config.yaml with your email SMTP settings and preferences
-
-# Test run (no email, no DB changes)
-python3 main.py --dry-run
-
-# Real run
-python3 main.py
-
-# Install cron job (default: every 3 hours)
+# Install (creates venv, installs deps, sets up cron)
 ./install.sh
 
-# Custom interval (every 6 hours)
-./install.sh 6
+# Or manually:
+python3 -m venv venv
+venv/bin/pip install -r requirements.txt
+
+# Configure
+cp config.example.yaml config.yaml
+# Edit config.yaml
+
+# Test
+venv/bin/python main.py --dry-run
+venv/bin/python main.py --dry-run --profile praha7-byty
+
+# Run for real
+venv/bin/python main.py
 ```
 
 ## Config
 
+The config has a shared `email` section and multiple `profiles`:
+
 ```yaml
-search:
-  min_price: 0
-  max_price: 25000
-  dispositions: []            # e.g. ["2+kk", "2+1"] - empty means all
-  min_size_m2: 0              # 0 means no minimum
-
-scoring:
-  price_per_m2_weight: 40
-  disposition_weight: 30
-  preferred_dispositions:
-    - "2+kk"
-    - "2+1"
-    - "3+kk"
-  size_weight: 15
-  ideal_size_m2: 55
-  neighborhood_weight: 15
-  preferred_neighborhoods:
-    - "Holešovice"
-    - "Letná"
-    - "Bubeneč"
-
 email:
   smtp_host: "smtp.gmail.com"
   smtp_port: 587
   smtp_user: "you@gmail.com"
   smtp_password: "your-app-password"
   from: "you@gmail.com"
-  to:
-    - "you@gmail.com"
-    - "friend@example.com"
 
-schedule:
-  cron_interval_hours: 3
+profiles:
+  # Flat rentals in Praha 7
+  praha7-byty:
+    name: "Praha 7 - byty k pronajmu"
+    to: ["you@gmail.com", "partner@gmail.com"]
+    search:
+      offer_type: rent
+      estate_type: flat
+      max_price: 25000
+    scrapers:
+      sreality:
+        enabled: true
+        category_main_cb: 1       # 1=byty
+        category_type_cb: 2       # 2=pronajem
+        locality_district_id: 5007
+      bezrealitky:
+        enabled: true
+        estate_type: "BYT"
+        offer_type: "PRONAJEM"
+        region_osm_id: "R20000064250"
+      remax:
+        enabled: true
+        search_url: "https://www.remax-czech.cz/reality/vyhledavani/?hledani=2&..."
+    scoring:
+      price_per_m2_weight: 40
+      disposition_weight: 30
+      preferred_dispositions: ["2+kk", "2+1"]
+      size_weight: 15
+      ideal_size_m2: 55
+      neighborhood_weight: 15
+      preferred_neighborhoods: ["Holešovice", "Letná"]
+    tram_enrichment: true
+
+  # Houses for sale in Domažlice district
+  domazlice-domy:
+    name: "Domažlicko - domy a chalupy"
+    to: ["father@gmail.com"]
+    search:
+      offer_type: sale
+      estate_type: house
+      max_price: 5000000
+      min_land_m2: 500
+    scrapers:
+      sreality:
+        enabled: true
+        category_main_cb: 2       # 2=domy
+        category_type_cb: 1       # 1=prodej
+        locality_district_id: 8   # Domažlický okres
+        category_sub_cb: "37|43|44"
+      bezrealitky:
+        enabled: true
+        estate_type: "DUM"
+        offer_type: "PRODEJ"
+        region_osm_id: "R441864"
+      remax:
+        enabled: true
+        search_url: "https://www.remax-czech.cz/reality/vyhledavani/?hledani=1&types%5B6%5D=on&types%5B10%5D=on&regions%5B43%5D%5B3402%5D=on"
+    scoring:
+      land_weight: 40
+      ideal_land_m2: 2000
+      price_weight: 30
+      max_good_price: 3000000
+      size_weight: 30
+      ideal_size_m2: 150
 ```
 
-### Gmail App Password
+See `config.example.yaml` for a complete reference with all options.
 
-1. Enable 2FA on your Google account
-2. Go to https://myaccount.google.com/apppasswords
-3. Generate an app password for "Mail"
-4. Use that 16-char password in `smtp_password`
+## Adding a new profile
 
-## How it works
+1. Choose scraper parameters:
+   - **Sreality**: `category_main_cb` (1=byty, 2=domy, 3=pozemky), `category_type_cb` (1=prodej, 2=pronajem), `locality_district_id` (find via sreality.cz URL)
+   - **Bezrealitky**: `estate_type` (BYT/DUM/POZEMEK/REKREACNI_OBJEKT), `offer_type` (PRODEJ/PRONAJEM), `region_osm_id` (find via OpenStreetMap)
+   - **RE/MAX**: Build a `search_url` on remax-czech.cz and paste it
+2. Configure scoring weights for what matters (price/m2 for rentals, land_area for houses, etc.)
+3. Set the `to` recipients
 
-1. Scrapes all enabled sources for Praha 7 rentals
-2. Applies filters (disposition, size, price range)
-3. Enriches with metro distances (GPS-based)
-4. Deduplicates across sources (same flat on Sreality + Bezrealitky)
-5. Computes smart score for each listing
-6. Detects price drops vs. previous runs
-7. Detects disappeared listings (no longer on any site)
-8. Sends HTML email sorted by score (best first)
-9. Stores full listing data in `data/seen.json`
+## CLI
+
+```bash
+python3 main.py                          # Run all profiles
+python3 main.py --profile praha7-byty    # Run one profile
+python3 main.py --dry-run                # No email, no DB changes
+python3 main.py --dry-run --profile X    # Test one profile
+```
 
 ## Logs
 

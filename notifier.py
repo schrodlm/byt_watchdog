@@ -261,7 +261,7 @@ def _render_disappeared_section(disappeared: list[dict], is_rent: bool) -> str:
     </div>"""
 
 
-def _render_market_footer(listings: list[Listing], all_seen: dict, is_rent: bool) -> str:
+def _render_market_footer(listings: list[Listing], all_seen: dict, is_rent: bool, profile_name: str = "") -> str:
     """Render market stats footer - just the numbers."""
     from market import compute_avg_time_on_market
 
@@ -293,8 +293,9 @@ def _render_market_footer(listings: list[Listing], all_seen: dict, is_rent: bool
     if avg_days is not None:
         footer_lines.append(f'<div>Průměrně na trhu {avg_days} dní</div>')
     if total_seen > 0:
+        location_note = f" v {escape(profile_name)}" if profile_name else ""
         footer_lines.append(
-            f'<div>Srovnání: ±15{NBSP}m² z {total_seen} historických nabídek</div>'
+            f'<div>Srovnání: ±15{NBSP}m² z {total_seen} historických nabídek{location_note}</div>'
         )
 
     if not footer_lines:
@@ -343,7 +344,7 @@ def send_email(listings: list[Listing], email_cfg: dict, profile: dict | None = 
     cards_html = _render_listings_grouped(listings, is_rent)
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     disappeared_html = _render_disappeared_section(disappeared or [], is_rent)
-    footer_html = _render_market_footer(listings, all_seen or {}, is_rent)
+    footer_html = _render_market_footer(listings, all_seen or {}, is_rent, profile_name)
 
     new_count = sum(1 for l in listings if not l.price_drop_from)
     drop_count = sum(1 for l in listings if l.price_drop_from)

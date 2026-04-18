@@ -32,26 +32,62 @@ def load_config() -> dict:
         log.error("config.yaml not found. Copy config.example.yaml and fill in your settings.")
         sys.exit(1)
     with open(CONFIG_PATH, "r") as f:
-        return yaml.safe_load(f)
+        config = yaml.safe_load(f)
+    errors = validate_config(config)
+    if errors:
+        for err in errors:
+            log.error("Config error: %s", err)
+        sys.exit(1)
+    return config
+
+
+def validate_config(config: dict) -> list[str]:
+    """Validate config structure. Returns list of error messages."""
+    errors = []
+    email = config.get("email", {})
+    for key in ("smtp_host", "smtp_port", "smtp_user", "smtp_password", "from"):
+        if key not in email:
+            errors.append(f"email.{key} is missing")
+    profiles = config.get("profiles", {})
+    if not profiles:
+        errors.append("No profiles defined")
+    for pid, profile in profiles.items():
+        if not profile.get("to"):
+            errors.append(f"profile '{pid}' has no 'to' recipients")
+        if not profile.get("search"):
+            errors.append(f"profile '{pid}' has no 'search' section")
+        if not profile.get("scrapers"):
+            errors.append(f"profile '{pid}' has no 'scrapers' section")
+    return errors
 
 
 def _acquire_pidlock() -> bool:
+    """Acquire PID lock using atomic file creation."""
+    import fcntl
     os.makedirs(os.path.dirname(PID_PATH), exist_ok=True)
-    if os.path.exists(PID_PATH):
+    try:
+        fd = os.open(PID_PATH, os.O_CREAT | os.O_WRONLY, 0o644)
         try:
-            with open(PID_PATH, "r") as f:
-                old_pid = int(f.read().strip())
-            os.kill(old_pid, 0)
-            return False
-        except (ValueError, OSError):
-            pass  # Stale/corrupt pidfile, safe to reclaim
-    with open(PID_PATH, "w") as f:
-        f.write(str(os.getpid()))
-    return True
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            os.close(fd)
+            return False  # Another process holds the lock
+        os.ftruncate(fd, 0)
+        os.write(fd, str(os.getpid()).encode())
+        # Keep fd open (lock is held until process exits or fd is closed)
+        # Store fd so _release_pidlock can close it
+        _acquire_pidlock._fd = fd
+        return True
+    except OSError:
+        return False
 
 
 def _release_pidlock():
     try:
+        fd = getattr(_acquire_pidlock, '_fd', None)
+        if fd is not None:
+            os.close(fd)
+            _acquire_pidlock._fd = None
         os.unlink(PID_PATH)
     except OSError:
         pass

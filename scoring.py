@@ -6,7 +6,7 @@ from scrapers.base import Listing
 def compute_score(listing: Listing, profile: dict) -> int:
     """Compute a 0-100 smart score for a listing based on profile scoring config."""
     scoring_cfg = profile.get("scoring", {})
-    if not scoring_cfg:
+    if not scoring_cfg or not listing.price:
         return 0
 
     total = 0.0

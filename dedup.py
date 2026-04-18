@@ -1,7 +1,7 @@
 """Cross-source deduplication - detect same property listed on multiple sites."""
 
-import math
 import re
+from geo import haversine_m
 from scrapers.base import Listing
 
 SKIP_WORDS = {
@@ -10,14 +10,6 @@ SKIP_WORDS = {
     "okres", "kraj", "obec", "mesto", "město",
 }
 
-
-def _haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> int:
-    R = 6371000
-    phi1, phi2 = math.radians(lat1), math.radians(lat2)
-    dphi = math.radians(lat2 - lat1)
-    dlam = math.radians(lon2 - lon1)
-    a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlam / 2) ** 2
-    return round(2 * R * math.atan2(math.sqrt(a), math.sqrt(1 - a)))
 
 
 def _normalize_location(loc: str) -> str:
@@ -54,7 +46,7 @@ def _are_same_property(li: Listing, lj: Listing) -> bool:
 
     # GPS proximity (strongest signal)
     if li.lat is not None and lj.lat is not None:
-        dist = _haversine_m(li.lat, li.lon, lj.lat, lj.lon)
+        dist = haversine_m(li.lat, li.lon, lj.lat, lj.lon)
         if dist < 200:
             return True
         if dist > 1000:

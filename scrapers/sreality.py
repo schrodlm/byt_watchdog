@@ -54,7 +54,7 @@ class SrealityScraper(BaseScraper):
         params = self._build_params()
 
         for attempt in range(3):
-            resp = requests.get(API_URL, params=params, timeout=30)
+            resp = self.session.get(API_URL, params=params, timeout=30)
             resp.raise_for_status()
             data = resp.json()
             estates = data.get("_embedded", {}).get("estates", [])

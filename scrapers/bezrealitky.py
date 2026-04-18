@@ -62,9 +62,7 @@ class BezrealitkyScraper(BaseScraper):
             if page > 1:
                 url += f"&page={page}"
 
-            resp = requests.get(url, timeout=30, headers={
-                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0",
-            })
+            resp = self.session.get(url, timeout=30)
             resp.raise_for_status()
 
             # Extract __NEXT_DATA__ JSON

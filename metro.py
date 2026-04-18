@@ -3,7 +3,7 @@
 Data from PID (Prague Integrated Transport) - data.pid.cz
 """
 
-import math
+from geo import haversine_m
 from scrapers.base import Listing
 
 # Praha 7 tram stops: (name, lat, lon, [daytime_lines])
@@ -36,16 +36,6 @@ TRAM_STOPS = [
 ]
 
 
-def _haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> int:
-    """Calculate distance in meters between two GPS points."""
-    R = 6371000
-    phi1, phi2 = math.radians(lat1), math.radians(lat2)
-    dphi = math.radians(lat2 - lat1)
-    dlam = math.radians(lon2 - lon1)
-    a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlam / 2) ** 2
-    return round(2 * R * math.atan2(math.sqrt(a), math.sqrt(1 - a)))
-
-
 def enrich_tram(listing: Listing) -> None:
     """Add nearest tram stop, distance, and lines to a listing (mutates in place)."""
     if listing.lat is None or listing.lon is None:
@@ -56,7 +46,7 @@ def enrich_tram(listing: Listing) -> None:
     best_lines = []
 
     for name, lat, lon, lines in TRAM_STOPS:
-        dist = _haversine_m(listing.lat, listing.lon, lat, lon)
+        dist = haversine_m(listing.lat, listing.lon, lat, lon)
         if dist < best_dist:
             best_dist = dist
             best_name = name

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Byt Watchdog - Flat rental monitor for Praha 7."""
 
+import argparse
 import logging
 import os
 import sys
@@ -29,9 +30,12 @@ def load_config() -> dict:
         return yaml.safe_load(f)
 
 
-def run():
+def run(dry_run: bool = False):
     config = load_config()
     scraper_configs = config.get("scrapers", {})
+
+    if dry_run:
+        log.info("DRY RUN - no emails will be sent, seen.json will not be updated")
 
     all_listings = []
     for name, scraper_cls in ALL_SCRAPERS.items():
@@ -61,6 +65,12 @@ def run():
         log.info("No new listings to report")
         return
 
+    if dry_run:
+        for l in new_listings:
+            log.info("  [NEW] %s | %d Kc | %s | %s", l.disposition or "?", l.price, l.location, l.url)
+        log.info("DRY RUN complete - %d new listings found", len(new_listings))
+        return
+
     # Mark as seen
     db.mark_seen([l.id for l in new_listings])
 
@@ -74,4 +84,7 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    parser = argparse.ArgumentParser(description="Byt Watchdog - Flat rental monitor")
+    parser.add_argument("--dry-run", action="store_true", help="Scrape and show results without sending email or updating seen.json")
+    args = parser.parse_args()
+    run(dry_run=args.dry_run)

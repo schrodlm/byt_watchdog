@@ -1,4 +1,5 @@
 search:
+  min_price: 0
   max_price: 25000
 
 scrapers:
@@ -15,7 +16,9 @@ email:
   smtp_user: "your-email@gmail.com"
   smtp_password: "your-app-password"
   from: "your-email@gmail.com"
-  to: "your-email@gmail.com"
+  to:
+    - "your-email@gmail.com"
+    - "friend@example.com"
 
 schedule:
   cron_interval_hours: 3

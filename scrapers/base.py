@@ -20,6 +20,7 @@ class BaseScraper(ABC):
 
     def __init__(self, config: dict):
         self.config = config
+        self.min_price = config.get("search", {}).get("min_price", 0)
         self.max_price = config.get("search", {}).get("max_price", 25000)
 
     @abstractmethod

@@ -28,7 +28,7 @@ class SrealityScraper(BaseScraper):
                 "locality_district_id": 5007,   # Praha 7
                 "per_page": per_page,
                 "page": page,
-                "czk_price_summary_order2": f"0|{self.max_price}",
+                "czk_price_summary_order2": f"{self.min_price}|{self.max_price}",
             }
 
             resp = requests.get(API_URL, params=params, timeout=30)
@@ -45,7 +45,7 @@ class SrealityScraper(BaseScraper):
                     continue
 
                 price = e.get("price", 0)
-                if price > self.max_price:
+                if price > self.max_price or price < self.min_price:
                     continue
 
                 seo = e.get("seo", {})

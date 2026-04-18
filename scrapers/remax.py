@@ -7,6 +7,7 @@ from scrapers.base import BaseScraper, Listing
 SEARCH_URL = (
     "https://www.remax-czech.cz/reality/vyhledavani/"
     "?hledani=2"
+    "&price_from={min_price}"
     "&price_to={max_price}"
     "&regions%5B19%5D%5B78%5D=on"
     "&types%5B4%5D=on"
@@ -21,7 +22,7 @@ class RemaxScraper(BaseScraper):
         page = 1
 
         while True:
-            url = SEARCH_URL.format(max_price=self.max_price)
+            url = SEARCH_URL.format(min_price=self.min_price, max_price=self.max_price)
             if page > 1:
                 url += f"&stranka={page}"
 
@@ -112,7 +113,7 @@ class RemaxScraper(BaseScraper):
             except ValueError:
                 pass
 
-        if price > self.max_price or price == 0:
+        if price > self.max_price or price < self.min_price or price == 0:
             return None
 
         # Location - try to find Praha 7 reference

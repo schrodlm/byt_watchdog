@@ -10,6 +10,7 @@ SEARCH_URL = (
     "&estateType=BYT"
     "&offerType=PRONAJEM"
     "&osm_value=Praha+7%2C+obvod+Praha+7%2C+Hlavn%C3%AD+m%C4%9Bsto+Praha%2C+Praha%2C+%C4%8Cesko"
+    "&priceFrom={min_price}"
     "&priceTo={max_price}"
     "&regionOsmIds=R20000064250"
     "&location=exact"
@@ -47,7 +48,7 @@ class BezrealitkyScraper(BaseScraper):
         page = 1
 
         while True:
-            url = SEARCH_URL.format(max_price=self.max_price)
+            url = SEARCH_URL.format(min_price=self.min_price, max_price=self.max_price)
             if page > 1:
                 url += f"&page={page}"
 
@@ -106,7 +107,7 @@ class BezrealitkyScraper(BaseScraper):
                 uri = advert.get("uri", "")
                 price = advert.get("price", 0)
 
-                if price > self.max_price:
+                if price > self.max_price or price < self.min_price:
                     continue
                 if advert.get("reserved", False):
                     continue

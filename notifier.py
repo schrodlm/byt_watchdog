@@ -69,7 +69,11 @@ def send_email(listings: list[Listing], config: dict) -> None:
     msg = MIMEMultipart("alternative")
     msg["Subject"] = f"Byt Watchdog: {len(listings)} novych bytu v Praha 7"
     msg["From"] = email_cfg["from"]
-    msg["To"] = email_cfg["to"]
+    # Support both single string and list of recipients
+    recipients = email_cfg["to"]
+    if isinstance(recipients, str):
+        recipients = [recipients]
+    msg["To"] = ", ".join(recipients)
 
     # Plain text fallback
     plain_lines = [f"Nalezeno {len(listings)} novych bytu k pronajmu v Praha 7:\n"]
@@ -85,4 +89,4 @@ def send_email(listings: list[Listing], config: dict) -> None:
     with smtplib.SMTP(email_cfg["smtp_host"], email_cfg["smtp_port"]) as server:
         server.starttls()
         server.login(email_cfg["smtp_user"], email_cfg["smtp_password"])
-        server.sendmail(email_cfg["from"], email_cfg["to"], msg.as_string())
+        server.sendmail(email_cfg["from"], recipients, msg.as_string())

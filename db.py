@@ -7,49 +7,53 @@ from datetime import datetime, timezone, timedelta
 
 log = logging.getLogger("byt_watchdog")
 
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "seen.json")
-LOCK_PATH = DB_PATH + ".lock"
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 
 
-def _lock_file():
-    """Acquire an exclusive file lock."""
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    lock_fd = open(LOCK_PATH, "w")
+def _db_path(profile_id: str) -> str:
+    return os.path.join(DATA_DIR, f"seen-{profile_id}.json")
+
+
+def _lock_path(profile_id: str) -> str:
+    return os.path.join(DATA_DIR, f"seen-{profile_id}.json.lock")
+
+
+def _lock_file(profile_id: str):
+    os.makedirs(DATA_DIR, exist_ok=True)
+    lock_fd = open(_lock_path(profile_id), "w")
     fcntl.flock(lock_fd, fcntl.LOCK_EX)
     return lock_fd
 
 
 def _unlock_file(lock_fd):
-    """Release the file lock."""
     fcntl.flock(lock_fd, fcntl.LOCK_UN)
     lock_fd.close()
 
 
-def _load() -> dict:
-    if not os.path.exists(DB_PATH):
+def _load(profile_id: str) -> dict:
+    path = _db_path(profile_id)
+    if not os.path.exists(path):
         return {}
     try:
-        with open(DB_PATH, "r") as f:
+        with open(path, "r") as f:
             data = json.load(f)
             if not isinstance(data, dict):
-                log.warning("seen.json has unexpected format, resetting")
+                log.warning("seen-%s.json has unexpected format, resetting", profile_id)
                 return {}
             return data
     except (json.JSONDecodeError, ValueError) as e:
-        log.warning("seen.json is corrupt (%s), starting fresh", e)
+        log.warning("seen-%s.json is corrupt (%s), starting fresh", profile_id, e)
         return {}
 
 
-def _save(data: dict) -> None:
-    """Atomic write: write to temp file, then os.replace()."""
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    fd, tmp_path = tempfile.mkstemp(dir=os.path.dirname(DB_PATH), suffix=".tmp")
+def _save(profile_id: str, data: dict) -> None:
+    os.makedirs(DATA_DIR, exist_ok=True)
+    fd, tmp_path = tempfile.mkstemp(dir=DATA_DIR, suffix=".tmp")
     try:
         with os.fdopen(fd, "w") as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
-        os.replace(tmp_path, DB_PATH)
+        os.replace(tmp_path, _db_path(profile_id))
     except Exception:
-        # Clean up temp file on failure
         try:
             os.unlink(tmp_path)
         except OSError:
@@ -57,28 +61,16 @@ def _save(data: dict) -> None:
         raise
 
 
-def is_seen(listing_id: str) -> bool:
-    return listing_id in _load()
+def get_seen(profile_id: str) -> dict:
+    return _load(profile_id)
 
 
-def filter_new(listing_ids: list[str]) -> list[str]:
-    seen = _load()
-    return [lid for lid in listing_ids if lid not in seen]
-
-
-def get_seen() -> dict:
-    """Return the full seen database."""
-    return _load()
-
-
-def mark_seen(listings: list) -> None:
-    """Mark listings as seen. Accepts list of Listing objects or list of ID strings."""
-    lock_fd = _lock_file()
+def mark_seen(profile_id: str, listings: list) -> None:
+    lock_fd = _lock_file(profile_id)
     try:
-        seen = _load()
+        seen = _load(profile_id)
         now = datetime.now(timezone.utc).isoformat()
         for item in listings:
-            # Support both Listing objects and plain ID strings
             if isinstance(item, str):
                 lid = item
                 if lid not in seen:
@@ -87,12 +79,9 @@ def mark_seen(listings: list) -> None:
                 lid = item.id
                 entry = seen.get(lid, {})
                 if isinstance(entry, str):
-                    # Migrate old format (just a timestamp string)
                     entry = {"first_seen": entry}
-
                 if lid not in seen:
                     entry["first_seen"] = now
-
                 entry["last_seen"] = now
                 entry["price"] = item.price
                 entry["title"] = item.title
@@ -101,21 +90,21 @@ def mark_seen(listings: list) -> None:
                 entry["source"] = item.source
                 entry["size_m2"] = item.size_m2
                 entry["disposition"] = item.disposition
-                if hasattr(item, "lat"):
+                if item.lat is not None:
                     entry["lat"] = item.lat
                     entry["lon"] = item.lon
-                if hasattr(item, "charges"):
+                if item.charges is not None:
                     entry["charges"] = item.charges
-
+                if item.land_m2 is not None:
+                    entry["land_m2"] = item.land_m2
                 seen[lid] = entry
-        _save(seen)
+        _save(profile_id, seen)
     finally:
         _unlock_file(lock_fd)
 
 
-def update_prices(listings: list) -> list:
-    """Check for price drops. Returns list of (listing, old_price) tuples for drops."""
-    seen = _load()
+def update_prices(profile_id: str, listings: list) -> list:
+    seen = _load(profile_id)
     drops = []
     for listing in listings:
         entry = seen.get(listing.id)
@@ -126,13 +115,8 @@ def update_prices(listings: list) -> list:
     return drops
 
 
-def get_disappeared(current_ids: set[str], max_age_days: int = 7) -> list[dict]:
-    """Find listings in DB that are no longer in any scrape results.
-
-    Only considers listings seen in the last max_age_days to avoid
-    reporting very old listings.
-    """
-    seen = _load()
+def get_disappeared(profile_id: str, current_ids: set[str], max_age_days: int = 7) -> list[dict]:
+    seen = _load(profile_id)
     cutoff = (datetime.now(timezone.utc) - timedelta(days=max_age_days)).isoformat()
     disappeared = []
     for lid, entry in seen.items():
@@ -146,25 +130,24 @@ def get_disappeared(current_ids: set[str], max_age_days: int = 7) -> list[dict]:
     return disappeared
 
 
-def prune(max_age_days: int = 90) -> int:
-    """Remove entries older than max_age_days. Returns count removed."""
-    lock_fd = _lock_file()
+def prune(profile_id: str, max_age_days: int = 90) -> int:
+    lock_fd = _lock_file(profile_id)
     try:
-        seen = _load()
+        seen = _load(profile_id)
         cutoff = (datetime.now(timezone.utc) - timedelta(days=max_age_days)).isoformat()
         to_remove = []
         for lid, entry in seen.items():
             if isinstance(entry, dict):
                 last = entry.get("last_seen", entry.get("first_seen", ""))
             else:
-                last = entry  # Old format: just a timestamp string
+                last = entry
             if last < cutoff:
                 to_remove.append(lid)
         for lid in to_remove:
             del seen[lid]
         if to_remove:
-            _save(seen)
-            log.info("Pruned %d old entries from seen.json", len(to_remove))
+            _save(profile_id, seen)
+            log.info("Pruned %d old entries from seen-%s.json", len(to_remove), profile_id)
         return len(to_remove)
     finally:
         _unlock_file(lock_fd)

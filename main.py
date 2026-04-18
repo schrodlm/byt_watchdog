@@ -43,8 +43,8 @@ def _acquire_pidlock() -> bool:
                 old_pid = int(f.read().strip())
             os.kill(old_pid, 0)
             return False
-        except (ValueError, ProcessLookupError, PermissionError):
-            pass
+        except (ValueError, OSError):
+            pass  # Stale/corrupt pidfile, safe to reclaim
     with open(PID_PATH, "w") as f:
         f.write(str(os.getpid()))
     return True

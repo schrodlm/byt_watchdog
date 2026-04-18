@@ -110,7 +110,7 @@ def update_prices(profile_id: str, listings: list) -> list:
         entry = seen.get(listing.id)
         if entry and isinstance(entry, dict):
             old_price = entry.get("price")
-            if old_price and old_price > listing.price:
+            if old_price and listing.price and old_price > listing.price:
                 drops.append((listing, old_price))
     return drops
 

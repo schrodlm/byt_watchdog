@@ -258,52 +258,49 @@ def _render_disappeared_section(disappeared: list[dict], is_rent: bool) -> str:
     </div>"""
 
 
-def _render_score_legend() -> str:
-    """Render a subtle footnote explaining the score and market percentile."""
-    return (
-        '<div style="margin-top:20px;padding-top:12px;border-top:1px solid #e0e0e0;'
-        'font-size:11px;color:#999999;line-height:1.6;">'
-        '<strong style="color:#888888;">Jak počítáme procenta?</strong><br>'
-        'Skóre = vážený průměr: cena/m², dispozice, velikost a lokalita dle preferencí v profilu.<br>'
-        'Tržní srovnání (např. "levnější než 73% podobných ~50 m²") = cenový percentil vůči všem'
-        ' historicky viděným nabídkám podobné velikosti (±15 m²).'
-        '</div>'
-    )
-
-
-def _render_market_summary(listings: list[Listing], all_seen: dict, is_rent: bool) -> str:
-    """Render a brief market summary footer with factual stats."""
+def _render_market_footer(listings: list[Listing], all_seen: dict, is_rent: bool) -> str:
+    """Render market stats footer - just the numbers."""
     from market import compute_avg_time_on_market
 
-    # Group current listings by disposition
+    unit = "Kč/měsíc" if is_rent else "Kč"
+
+    # Price ranges by disposition
     by_disp: dict[str, list[int]] = {}
     for l in listings:
         if l.disposition and l.price:
             by_disp.setdefault(l.disposition, []).append(l.price)
 
     lines = []
-    for disp in sorted(by_disp, key=lambda d: len(by_disp[d]), reverse=True)[:3]:
+    for disp in sorted(by_disp, key=lambda d: len(by_disp[d]), reverse=True)[:4]:
         prices = sorted(by_disp[disp])
-        median = prices[len(prices) // 2]
-        median_str = f"{median:,}".replace(",", NBSP)
-        unit = "Kč/měsíc" if is_rent else "Kč"
-        lines.append(f"{escape(disp)}: medián {median_str}{NBSP}{unit} ({len(prices)} nabídek)")
+        lo = f"{prices[0]:,}".replace(",", NBSP)
+        hi = f"{prices[-1]:,}".replace(",", NBSP)
+        med = f"{prices[len(prices) // 2]:,}".replace(",", NBSP)
+        lines.append(
+            f'<div>{escape(disp)}: {lo} – {hi}{NBSP}{unit},'
+            f' medián {med}{NBSP}{unit} ({len(prices)})</div>'
+        )
 
     avg_days = compute_avg_time_on_market(all_seen)
+    total_seen = sum(1 for v in all_seen.values() if isinstance(v, dict) and v.get("price"))
 
-    if not lines and avg_days is None:
+    footer_lines = []
+    if lines:
+        footer_lines.append("".join(lines))
+    if avg_days is not None:
+        footer_lines.append(f'<div>Průměrně na trhu {avg_days} dní</div>')
+    if total_seen > 0:
+        footer_lines.append(
+            f'<div>Srovnání: ±15{NBSP}m² z {total_seen} historických nabídek</div>'
+        )
+
+    if not footer_lines:
         return ""
 
-    parts = []
-    if lines:
-        parts.append(" · ".join(lines))
-    if avg_days is not None:
-        parts.append(f"Průměrná doba na trhu: {avg_days} dní")
-
-    content = "<br>".join(parts)
     return f"""
-    <div style="margin-top:20px;padding:12px 16px;background:#fafafa;border-radius:8px;border:1px solid #e0e0e0;font-size:12px;color:#666666;">
-      {content}
+    <div style="margin-top:20px;padding-top:12px;border-top:1px solid #e0e0e0;
+      font-size:11px;color:#999999;line-height:1.8;">
+      {"".join(footer_lines)}
     </div>"""
 
 
@@ -343,8 +340,7 @@ def send_email(listings: list[Listing], email_cfg: dict, profile: dict | None = 
     cards_html = _render_listings_grouped(listings, is_rent)
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     disappeared_html = _render_disappeared_section(disappeared or [], is_rent)
-    market_html = _render_market_summary(listings, all_seen or {}, is_rent)
-    legend_html = _render_score_legend()
+    footer_html = _render_market_footer(listings, all_seen or {}, is_rent)
 
     new_count = sum(1 for l in listings if not l.price_drop_from)
     drop_count = sum(1 for l in listings if l.price_drop_from)
@@ -398,8 +394,7 @@ def send_email(listings: list[Listing], email_cfg: dict, profile: dict | None = 
   <p style="color:#666666;font-size:14px;margin-bottom:24px;">{subtitle}</p>
   {cards_html}
   {disappeared_html}
-  {market_html}
-  {legend_html}
+  {footer_html}
   <p style="text-align:center;color:#999999;font-size:12px;margin-top:24px;">Byt Watchdog</p>
 </div>
 </body>

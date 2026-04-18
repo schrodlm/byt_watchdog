@@ -193,44 +193,58 @@ class TestNotifierAllNoneOptionals:
         html = _render_card(listing, is_rent=True)
         assert "<img" not in html
 
-    def test_render_card_no_gps_no_map_link(self):
+    def test_render_card_no_location_no_gps_no_map_link(self):
         from notifier import _render_card
 
         listing = Listing(
             id="test:nogps", source="test", title="No GPS",
-            price=10000, location="Praha", url="https://example.com",
+            price=10000, location="", url="https://example.com",
         )
         html = _render_card(listing, is_rent=True)
         assert "maps.google.com" not in html
+
+    def test_render_card_location_produces_map_link(self):
+        from notifier import _render_card
+
+        listing = Listing(
+            id="test:loc", source="test", title="Test",
+            price=10000, location="Umělecká, Praha - Holešovice", url="https://example.com",
+        )
+        html = _render_card(listing, is_rent=True)
+        assert "maps.google.com" in html
+        assert "Um%C4%9Bleck" in html  # URL-encoded address
 
 
 # ─── 6. Notifier maps link uniqueness ────────────────────────
 
 class TestNotifierMapsLinkUniqueness:
-    def test_different_coords_different_map_urls(self):
+    def test_different_locations_different_map_urls(self):
         from notifier import _render_card
 
-        coords = [
-            (50.10, 14.40),
-            (50.20, 14.50),
-            (49.80, 13.90),
+        locations = [
+            "Umělecká, Praha - Holešovice",
+            "Letohradská, Praha - Holešovice",
+            "Jana Zajíce, Praha - Bubeneč",
         ]
 
         map_urls = []
-        for i, (lat, lon) in enumerate(coords):
-            listing = _make_listing(
-                id=f"test:{i}", lat=lat, lon=lon,
-            )
+        for i, loc in enumerate(locations):
+            listing = _make_listing(id=f"test:{i}", location=loc)
             html = _render_card(listing, is_rent=True)
-            # Extract the maps.google.com URL from the rendered HTML
             match = re.search(r'https://maps\.google\.com/\?q=[^"]+', html)
             assert match is not None, f"No maps URL found for listing {i}"
             map_urls.append(match.group(0))
 
-        # All three URLs must be distinct
         assert len(set(map_urls)) == 3, (
             f"Expected 3 unique map URLs, got {len(set(map_urls))}: {map_urls}"
         )
+
+    def test_gps_fallback_when_no_location(self):
+        from notifier import _render_card
+
+        listing = _make_listing(location="", lat=50.10199, lon=14.42769)
+        html = _render_card(listing, is_rent=True)
+        assert "50.10199" in html, "GPS fallback should be used when no location"
 
 
 # ─── 7. Scoring with all zero weights ────────────────────────

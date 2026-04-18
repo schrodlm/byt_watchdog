@@ -137,12 +137,12 @@ class RemaxScraper(BaseScraper):
         if price < self.min_price or price == 0:
             return None
 
-        card_text = card.get_text()
+        card_text = " ".join(card.get_text().split())  # Normalize whitespace
 
         # Location
         location = ""
         if data_address:
-            location = data_address
+            location = " ".join(data_address.split())
         else:
             loc_match = re.search(r"(?:Praha\s*\d+\s*[-–]\s*\w+|[A-Z][a-záčďéěíňóřšťúůýž]+\s*[-–]\s*\w+)", card_text)
             if loc_match:

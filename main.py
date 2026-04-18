@@ -146,20 +146,24 @@ def run_profile(profile_id: str, profile: dict, email_cfg: dict, dry_run: bool =
     new_listings = [l for l in all_listings if l.id not in seen]
     price_drop_listings = [l for l, _ in price_drops if l.id not in {n.id for n in new_listings}]
 
-    # Detect disappeared
+    # Detect disappeared (requires 3+ consecutive misses to filter API noise)
     current_ids = {l.id for l in all_listings}
+    db.update_miss_counts(profile_id, current_ids)
     disappeared = db.get_disappeared(profile_id, current_ids)
     if disappeared:
-        log.info("Disappeared: %d listings no longer found", len(disappeared))
+        log.info("Disappeared: %d listings confirmed gone (3+ misses)", len(disappeared))
 
     notable = new_listings + price_drop_listings
     log.info("Total: %d listings, %d new, %d price drops, %d disappeared",
              len(all_listings), len(new_listings), len(price_drops), len(disappeared))
 
-    if not notable and not disappeared:
+    if not notable:
         if not dry_run:
             db.mark_seen(profile_id, all_listings)
-        log.info("No new listings or changes to report")
+        if disappeared:
+            log.info("Only disappeared listings (%d) - no email sent", len(disappeared))
+        else:
+            log.info("No new listings or changes to report")
         return
 
     if dry_run:

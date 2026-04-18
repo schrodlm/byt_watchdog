@@ -115,7 +115,36 @@ def update_prices(profile_id: str, listings: list) -> list:
     return drops
 
 
-def get_disappeared(profile_id: str, current_ids: set[str], max_age_days: int = 7) -> list[dict]:
+def update_miss_counts(profile_id: str, current_ids: set[str]) -> None:
+    """Increment miss_count for listings not in current scrape, reset for found ones."""
+    lock_fd = _lock_file(profile_id)
+    try:
+        seen = _load(profile_id)
+        changed = False
+        for lid, entry in seen.items():
+            if not isinstance(entry, dict):
+                continue
+            if lid in current_ids:
+                if entry.get("miss_count", 0) > 0:
+                    entry["miss_count"] = 0
+                    changed = True
+            else:
+                entry["miss_count"] = entry.get("miss_count", 0) + 1
+                changed = True
+        if changed:
+            _save(profile_id, seen)
+    finally:
+        _unlock_file(lock_fd)
+
+
+def get_disappeared(profile_id: str, current_ids: set[str],
+                    max_age_days: int = 7, min_misses: int = 3) -> list[dict]:
+    """Find listings that have been missing for min_misses consecutive runs.
+
+    This filters out API noise (e.g. Sreality returning inconsistent results).
+    A listing must be absent from min_misses consecutive scrapes before being
+    reported as disappeared.
+    """
     seen = _load(profile_id)
     cutoff = (datetime.now(timezone.utc) - timedelta(days=max_age_days)).isoformat()
     disappeared = []
@@ -123,6 +152,9 @@ def get_disappeared(profile_id: str, current_ids: set[str], max_age_days: int = 
         if not isinstance(entry, dict):
             continue
         if lid in current_ids:
+            continue
+        miss_count = entry.get("miss_count", 0)
+        if miss_count < min_misses:
             continue
         first_seen = entry.get("first_seen", "")
         if first_seen >= cutoff and entry.get("title"):

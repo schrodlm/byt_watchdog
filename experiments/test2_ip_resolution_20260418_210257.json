@@ -1,0 +1,25 @@
+{
+  "dns": {
+    "www.sreality.cz": [
+      "sreality.cz.",
+      "77.75.79.140"
+    ],
+    "api.sreality.cz": [],
+    "sreality.cz": [
+      "77.75.79.140"
+    ]
+  },
+  "direct_ip_tests": [
+    {
+      "ip": "77.75.79.140",
+      "shard_fingerprints": [
+        "450ce0cf",
+        "450ce0cf",
+        "450ce0cf",
+        "450ce0cf",
+        "450ce0cf"
+      ],
+      "unique_shards": 1
+    }
+  ]
+}

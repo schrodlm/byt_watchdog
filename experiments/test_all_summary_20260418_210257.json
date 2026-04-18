@@ -1,0 +1,2084 @@
+{
+  "test1_headers": {
+    "test": "response_headers",
+    "num_requests": 20,
+    "all_headers_seen": {
+      "server": {
+        "count": 20,
+        "unique_values": [
+          "envoy"
+        ]
+      },
+      "date": {
+        "count": 20,
+        "unique_values": [
+          "Sat, 18 Apr 2026 19:03:01 GMT",
+          "Sat, 18 Apr 2026 19:03:09 GMT",
+          "Sat, 18 Apr 2026 19:02:57 GMT",
+          "Sat, 18 Apr 2026 19:03:16 GMT",
+          "Sat, 18 Apr 2026 19:03:13 GMT",
+          "Sat, 18 Apr 2026 19:03:10 GMT",
+          "Sat, 18 Apr 2026 19:03:11 GMT",
+          "Sat, 18 Apr 2026 19:03:03 GMT",
+          "Sat, 18 Apr 2026 19:03:05 GMT",
+          "Sat, 18 Apr 2026 19:02:59 GMT"
+        ]
+      },
+      "content-type": {
+        "count": 20,
+        "unique_values": [
+          "application/hal+json"
+        ]
+      },
+      "expires": {
+        "count": 20,
+        "unique_values": [
+          "Thu, 1 Jan 1970 08:00:00 GMT"
+        ]
+      },
+      "cache-control": {
+        "count": 20,
+        "unique_values": [
+          "no-cache=\"set-cookie\""
+        ]
+      },
+      "vary": {
+        "count": 20,
+        "unique_values": [
+          "Accept-Encoding"
+        ]
+      },
+      "content-encoding": {
+        "count": 20,
+        "unique_values": [
+          "gzip"
+        ]
+      },
+      "x-envoy-upstream-service-time": {
+        "count": 20,
+        "unique_values": [
+          "456",
+          "308",
+          "353",
+          "403",
+          "394",
+          "355",
+          "384",
+          "401",
+          "396",
+          "352"
+        ]
+      },
+      "strict-transport-security": {
+        "count": 20,
+        "unique_values": [
+          "max-age=31622400; includeSubDomains; preload"
+        ]
+      },
+      "set-cookie": {
+        "count": 20,
+        "unique_values": [
+          "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:03:12 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=45780806966918afe23bd8d06f2f16c9cf6225490210058508c37b9b1ef49eeb; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:03:14 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=11d8dcdc741de0108d99f59f6ce9e5f70854b98e338ba285c84a745041333744; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:03:16 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=fbb106af0006f96ad3b1ee67cc623c186a2b3d1589c05d5f20325a4e28393532; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:03:07 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=ce57eedfe5fcc8a529c55a394611144eef79f350f792a4cac32282b44facce66; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:03:03 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=c9e1816a64330e3e13a4296d67312f18361e5027dc3641481abe5d22051a9d1f; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:03:02 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=28e5fdb6dd7882142f86696bd155db73af59aa14fb04a405ee3a47beef8d05f0; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:03:06 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=86cb6c6c5bb921777c7b5c4b4c283dddfd53c75f5e7c899b7e5f38c5cce29576; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:03:05 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=fa7c1f30b511dd5bc7aab3d1f60735ca0fbad4b0eaecb03652299ca16f69c560; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:03:09 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=28b240e3241728c7b4b45f758c28e95a8198994f79e14752d01f6288524821e3; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:02:59 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=880bd32eae691bcf1212dc6d820e96b846b8d1a09f740bcdffe85d46dc709e43; HttpOnly; Secure; Max-Age=86400; Path=/"
+        ]
+      },
+      "transfer-encoding": {
+        "count": 20,
+        "unique_values": [
+          "chunked"
+        ]
+      }
+    },
+    "varying_headers": [
+      "date",
+      "x-envoy-upstream-service-time",
+      "set-cookie"
+    ],
+    "requests": [
+      {
+        "request_num": 1,
+        "timestamp": "2026-04-18T21:02:57.698547",
+        "status_code": 200,
+        "shard_fingerprint": "de7e048d",
+        "result_size": 65,
+        "num_listings": 65,
+        "headers": {
+          "server": "envoy",
+          "date": "Sat, 18 Apr 2026 19:02:57 GMT",
+          "content-type": "application/hal+json",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT",
+          "cache-control": "no-cache=\"set-cookie\"",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "x-envoy-upstream-service-time": "384",
+          "strict-transport-security": "max-age=31622400; includeSubDomains; preload",
+          "set-cookie": "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:02:57 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=06e55c43361576a31f00551818e582acc05ee0334666baba1fdae8ea4bf5e59d; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "transfer-encoding": "chunked"
+        }
+      },
+      {
+        "request_num": 2,
+        "timestamp": "2026-04-18T21:02:58.680729",
+        "status_code": 200,
+        "shard_fingerprint": "450ce0cf",
+        "result_size": 68,
+        "num_listings": 68,
+        "headers": {
+          "server": "envoy",
+          "date": "Sat, 18 Apr 2026 19:02:58 GMT",
+          "content-type": "application/hal+json",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT",
+          "cache-control": "no-cache=\"set-cookie\"",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "x-envoy-upstream-service-time": "394",
+          "strict-transport-security": "max-age=31622400; includeSubDomains; preload",
+          "set-cookie": "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:02:58 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=ae445cc22d607c3f943082b6b4a5db98614b79d78a0c80d73dc119217b4adbca; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "transfer-encoding": "chunked"
+        }
+      },
+      {
+        "request_num": 3,
+        "timestamp": "2026-04-18T21:02:59.857508",
+        "status_code": 200,
+        "shard_fingerprint": "450ce0cf",
+        "result_size": 68,
+        "num_listings": 68,
+        "headers": {
+          "server": "envoy",
+          "date": "Sat, 18 Apr 2026 19:02:59 GMT",
+          "content-type": "application/hal+json",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT",
+          "cache-control": "no-cache=\"set-cookie\"",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "x-envoy-upstream-service-time": "593",
+          "strict-transport-security": "max-age=31622400; includeSubDomains; preload",
+          "set-cookie": "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:02:59 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=880bd32eae691bcf1212dc6d820e96b846b8d1a09f740bcdffe85d46dc709e43; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "transfer-encoding": "chunked"
+        }
+      },
+      {
+        "request_num": 4,
+        "timestamp": "2026-04-18T21:03:01.106296",
+        "status_code": 200,
+        "shard_fingerprint": "450ce0cf",
+        "result_size": 68,
+        "num_listings": 68,
+        "headers": {
+          "server": "envoy",
+          "date": "Sat, 18 Apr 2026 19:03:01 GMT",
+          "content-type": "application/hal+json",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT",
+          "cache-control": "no-cache=\"set-cookie\"",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "x-envoy-upstream-service-time": "666",
+          "strict-transport-security": "max-age=31622400; includeSubDomains; preload",
+          "set-cookie": "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:03:01 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=4926c140efa75f1e15686c1bd841d9d58255db8d345bb50fb5216a7ae44b2ab2; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "transfer-encoding": "chunked"
+        }
+      },
+      {
+        "request_num": 5,
+        "timestamp": "2026-04-18T21:03:02.056769",
+        "status_code": 200,
+        "shard_fingerprint": "450ce0cf",
+        "result_size": 68,
+        "num_listings": 68,
+        "headers": {
+          "server": "envoy",
+          "date": "Sat, 18 Apr 2026 19:03:02 GMT",
+          "content-type": "application/hal+json",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT",
+          "cache-control": "no-cache=\"set-cookie\"",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "x-envoy-upstream-service-time": "352",
+          "strict-transport-security": "max-age=31622400; includeSubDomains; preload",
+          "set-cookie": "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:03:02 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=28e5fdb6dd7882142f86696bd155db73af59aa14fb04a405ee3a47beef8d05f0; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "transfer-encoding": "chunked"
+        }
+      },
+      {
+        "request_num": 6,
+        "timestamp": "2026-04-18T21:03:03.032847",
+        "status_code": 200,
+        "shard_fingerprint": "450ce0cf",
+        "result_size": 68,
+        "num_listings": 68,
+        "headers": {
+          "server": "envoy",
+          "date": "Sat, 18 Apr 2026 19:03:03 GMT",
+          "content-type": "application/hal+json",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT",
+          "cache-control": "no-cache=\"set-cookie\"",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "x-envoy-upstream-service-time": "385",
+          "strict-transport-security": "max-age=31622400; includeSubDomains; preload",
+          "set-cookie": "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:03:03 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=c9e1816a64330e3e13a4296d67312f18361e5027dc3641481abe5d22051a9d1f; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "transfer-encoding": "chunked"
+        }
+      },
+      {
+        "request_num": 7,
+        "timestamp": "2026-04-18T21:03:04.126959",
+        "status_code": 200,
+        "shard_fingerprint": "450ce0cf",
+        "result_size": 68,
+        "num_listings": 68,
+        "headers": {
+          "server": "envoy",
+          "date": "Sat, 18 Apr 2026 19:03:04 GMT",
+          "content-type": "application/hal+json",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT",
+          "cache-control": "no-cache=\"set-cookie\"",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "x-envoy-upstream-service-time": "488",
+          "strict-transport-security": "max-age=31622400; includeSubDomains; preload",
+          "set-cookie": "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:03:04 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=61904c0dfaea705c369904c5cde9e9e6ec4c827230cde7e6df70a9d525668288; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "transfer-encoding": "chunked"
+        }
+      },
+      {
+        "request_num": 8,
+        "timestamp": "2026-04-18T21:03:05.121340",
+        "status_code": 200,
+        "shard_fingerprint": "450ce0cf",
+        "result_size": 68,
+        "num_listings": 68,
+        "headers": {
+          "server": "envoy",
+          "date": "Sat, 18 Apr 2026 19:03:05 GMT",
+          "content-type": "application/hal+json",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT",
+          "cache-control": "no-cache=\"set-cookie\"",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "x-envoy-upstream-service-time": "401",
+          "strict-transport-security": "max-age=31622400; includeSubDomains; preload",
+          "set-cookie": "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:03:05 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=fa7c1f30b511dd5bc7aab3d1f60735ca0fbad4b0eaecb03652299ca16f69c560; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "transfer-encoding": "chunked"
+        }
+      },
+      {
+        "request_num": 9,
+        "timestamp": "2026-04-18T21:03:06.125534",
+        "status_code": 200,
+        "shard_fingerprint": "450ce0cf",
+        "result_size": 68,
+        "num_listings": 68,
+        "headers": {
+          "server": "envoy",
+          "date": "Sat, 18 Apr 2026 19:03:06 GMT",
+          "content-type": "application/hal+json",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT",
+          "cache-control": "no-cache=\"set-cookie\"",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "x-envoy-upstream-service-time": "424",
+          "strict-transport-security": "max-age=31622400; includeSubDomains; preload",
+          "set-cookie": "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:03:06 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=86cb6c6c5bb921777c7b5c4b4c283dddfd53c75f5e7c899b7e5f38c5cce29576; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "transfer-encoding": "chunked"
+        }
+      },
+      {
+        "request_num": 10,
+        "timestamp": "2026-04-18T21:03:07.125175",
+        "status_code": 200,
+        "shard_fingerprint": "450ce0cf",
+        "result_size": 68,
+        "num_listings": 68,
+        "headers": {
+          "server": "envoy",
+          "date": "Sat, 18 Apr 2026 19:03:07 GMT",
+          "content-type": "application/hal+json",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT",
+          "cache-control": "no-cache=\"set-cookie\"",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "x-envoy-upstream-service-time": "403",
+          "strict-transport-security": "max-age=31622400; includeSubDomains; preload",
+          "set-cookie": "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:03:07 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=ce57eedfe5fcc8a529c55a394611144eef79f350f792a4cac32282b44facce66; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "transfer-encoding": "chunked"
+        }
+      },
+      {
+        "request_num": 11,
+        "timestamp": "2026-04-18T21:03:08.078149",
+        "status_code": 200,
+        "shard_fingerprint": "450ce0cf",
+        "result_size": 68,
+        "num_listings": 68,
+        "headers": {
+          "server": "envoy",
+          "date": "Sat, 18 Apr 2026 19:03:08 GMT",
+          "content-type": "application/hal+json",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT",
+          "cache-control": "no-cache=\"set-cookie\"",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "x-envoy-upstream-service-time": "365",
+          "strict-transport-security": "max-age=31622400; includeSubDomains; preload",
+          "set-cookie": "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:03:08 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=680967bbf6503b4a835a4f75b75947f6a0287f06d11f07bf081390d353312b25; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "transfer-encoding": "chunked"
+        }
+      },
+      {
+        "request_num": 12,
+        "timestamp": "2026-04-18T21:03:09.029553",
+        "status_code": 200,
+        "shard_fingerprint": "450ce0cf",
+        "result_size": 68,
+        "num_listings": 68,
+        "headers": {
+          "server": "envoy",
+          "date": "Sat, 18 Apr 2026 19:03:09 GMT",
+          "content-type": "application/hal+json",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT",
+          "cache-control": "no-cache=\"set-cookie\"",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "x-envoy-upstream-service-time": "355",
+          "strict-transport-security": "max-age=31622400; includeSubDomains; preload",
+          "set-cookie": "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:03:09 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=28b240e3241728c7b4b45f758c28e95a8198994f79e14752d01f6288524821e3; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "transfer-encoding": "chunked"
+        }
+      },
+      {
+        "request_num": 13,
+        "timestamp": "2026-04-18T21:03:10.067329",
+        "status_code": 200,
+        "shard_fingerprint": "450ce0cf",
+        "result_size": 68,
+        "num_listings": 68,
+        "headers": {
+          "server": "envoy",
+          "date": "Sat, 18 Apr 2026 19:03:10 GMT",
+          "content-type": "application/hal+json",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT",
+          "cache-control": "no-cache=\"set-cookie\"",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "x-envoy-upstream-service-time": "456",
+          "strict-transport-security": "max-age=31622400; includeSubDomains; preload",
+          "set-cookie": "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:03:10 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=62bc8510cf6ffa3cff7902bfb5a4572a945b41edbbdd36f26a7bf0afe14369a6; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "transfer-encoding": "chunked"
+        }
+      },
+      {
+        "request_num": 14,
+        "timestamp": "2026-04-18T21:03:11.048753",
+        "status_code": 200,
+        "shard_fingerprint": "450ce0cf",
+        "result_size": 68,
+        "num_listings": 68,
+        "headers": {
+          "server": "envoy",
+          "date": "Sat, 18 Apr 2026 19:03:11 GMT",
+          "content-type": "application/hal+json",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT",
+          "cache-control": "no-cache=\"set-cookie\"",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "x-envoy-upstream-service-time": "396",
+          "strict-transport-security": "max-age=31622400; includeSubDomains; preload",
+          "set-cookie": "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:03:11 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=5b9d722fec36c51f5848918ca2cd8bae7e5e3d403a1fd2ae062200008918b2b8; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "transfer-encoding": "chunked"
+        }
+      },
+      {
+        "request_num": 15,
+        "timestamp": "2026-04-18T21:03:11.938492",
+        "status_code": 200,
+        "shard_fingerprint": "de7e048d",
+        "result_size": 65,
+        "num_listings": 65,
+        "headers": {
+          "server": "envoy",
+          "date": "Sat, 18 Apr 2026 19:03:12 GMT",
+          "content-type": "application/hal+json",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT",
+          "cache-control": "no-cache=\"set-cookie\"",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "x-envoy-upstream-service-time": "308",
+          "strict-transport-security": "max-age=31622400; includeSubDomains; preload",
+          "set-cookie": "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:03:12 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=a9ba535bd535413ea6a603d458926453bc0511c9de3022332862adc091c451d8; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "transfer-encoding": "chunked"
+        }
+      },
+      {
+        "request_num": 16,
+        "timestamp": "2026-04-18T21:03:12.876608",
+        "status_code": 200,
+        "shard_fingerprint": "de7e048d",
+        "result_size": 65,
+        "num_listings": 65,
+        "headers": {
+          "server": "envoy",
+          "date": "Sat, 18 Apr 2026 19:03:12 GMT",
+          "content-type": "application/hal+json",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT",
+          "cache-control": "no-cache=\"set-cookie\"",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "x-envoy-upstream-service-time": "353",
+          "strict-transport-security": "max-age=31622400; includeSubDomains; preload",
+          "set-cookie": "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:03:12 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=45780806966918afe23bd8d06f2f16c9cf6225490210058508c37b9b1ef49eeb; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "transfer-encoding": "chunked"
+        }
+      },
+      {
+        "request_num": 17,
+        "timestamp": "2026-04-18T21:03:13.882056",
+        "status_code": 200,
+        "shard_fingerprint": "de7e048d",
+        "result_size": 65,
+        "num_listings": 65,
+        "headers": {
+          "server": "envoy",
+          "date": "Sat, 18 Apr 2026 19:03:13 GMT",
+          "content-type": "application/hal+json",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT",
+          "cache-control": "no-cache=\"set-cookie\"",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "x-envoy-upstream-service-time": "404",
+          "strict-transport-security": "max-age=31622400; includeSubDomains; preload",
+          "set-cookie": "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:03:13 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=3a58118944f2938c3251343c44b8b169bbeb3c0ce129e562a4955620c70d4168; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "transfer-encoding": "chunked"
+        }
+      },
+      {
+        "request_num": 18,
+        "timestamp": "2026-04-18T21:03:14.865403",
+        "status_code": 200,
+        "shard_fingerprint": "de7e048d",
+        "result_size": 65,
+        "num_listings": 65,
+        "headers": {
+          "server": "envoy",
+          "date": "Sat, 18 Apr 2026 19:03:14 GMT",
+          "content-type": "application/hal+json",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT",
+          "cache-control": "no-cache=\"set-cookie\"",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "x-envoy-upstream-service-time": "395",
+          "strict-transport-security": "max-age=31622400; includeSubDomains; preload",
+          "set-cookie": "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:03:14 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=11d8dcdc741de0108d99f59f6ce9e5f70854b98e338ba285c84a745041333744; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "transfer-encoding": "chunked"
+        }
+      },
+      {
+        "request_num": 19,
+        "timestamp": "2026-04-18T21:03:15.801010",
+        "status_code": 200,
+        "shard_fingerprint": "450ce0cf",
+        "result_size": 68,
+        "num_listings": 68,
+        "headers": {
+          "server": "envoy",
+          "date": "Sat, 18 Apr 2026 19:03:15 GMT",
+          "content-type": "application/hal+json",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT",
+          "cache-control": "no-cache=\"set-cookie\"",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "x-envoy-upstream-service-time": "352",
+          "strict-transport-security": "max-age=31622400; includeSubDomains; preload",
+          "set-cookie": "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:03:15 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=247632e17a5143d9396a9feb7c3dfbcfbc09e7c9143935d22d023885d5b4dc77; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "transfer-encoding": "chunked"
+        }
+      },
+      {
+        "request_num": 20,
+        "timestamp": "2026-04-18T21:03:16.770974",
+        "status_code": 200,
+        "shard_fingerprint": "450ce0cf",
+        "result_size": 68,
+        "num_listings": 68,
+        "headers": {
+          "server": "envoy",
+          "date": "Sat, 18 Apr 2026 19:03:16 GMT",
+          "content-type": "application/hal+json",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT",
+          "cache-control": "no-cache=\"set-cookie\"",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "x-envoy-upstream-service-time": "389",
+          "strict-transport-security": "max-age=31622400; includeSubDomains; preload",
+          "set-cookie": "lastsrch=; Domain=sreality.cz; expires=Sat, 18-Apr-2026 21:03:16 GMT; Max-Age=0; Path=/; HttpOnly, sznlbr=fbb106af0006f96ad3b1ee67cc623c186a2b3d1589c05d5f20325a4e28393532; HttpOnly; Secure; Max-Age=86400; Path=/",
+          "transfer-encoding": "chunked"
+        }
+      }
+    ]
+  },
+  "test2_ip_resolution": {
+    "dns": {
+      "www.sreality.cz": [
+        "sreality.cz.",
+        "77.75.79.140"
+      ],
+      "api.sreality.cz": [],
+      "sreality.cz": [
+        "77.75.79.140"
+      ]
+    },
+    "direct_ip_tests": [
+      {
+        "ip": "77.75.79.140",
+        "shard_fingerprints": [
+          "450ce0cf",
+          "450ce0cf",
+          "450ce0cf",
+          "450ce0cf",
+          "450ce0cf"
+        ],
+        "unique_shards": 1
+      }
+    ]
+  },
+  "test3_different_searches": {
+    "Praha_7_rent_17k25k": {
+      "params": {
+        "category_main_cb": 1,
+        "category_type_cb": 2,
+        "locality_district_id": 5007,
+        "per_page": 500,
+        "page": 1,
+        "czk_price_summary_order2": "17000|25000"
+      },
+      "shard_fingerprints": [
+        "dab33e67",
+        "450ce0cf",
+        "450ce0cf",
+        "450ce0cf",
+        "de7e048d",
+        "de7e048d",
+        "450ce0cf",
+        "450ce0cf",
+        "dab33e67",
+        "450ce0cf"
+      ],
+      "shard_distribution": {
+        "dab33e67": 2,
+        "450ce0cf": 6,
+        "de7e048d": 2
+      },
+      "result_sizes": [
+        68,
+        68,
+        68,
+        68,
+        65,
+        65,
+        68,
+        68,
+        68,
+        68
+      ],
+      "unique_result_sizes": [
+        65,
+        68
+      ],
+      "multi_shard": true,
+      "num_unique_shards": 3
+    },
+    "Praha_1_rent_all": {
+      "params": {
+        "category_main_cb": 1,
+        "category_type_cb": 2,
+        "locality_district_id": 5001,
+        "per_page": 500,
+        "page": 1
+      },
+      "shard_fingerprints": [
+        "db316998",
+        "03b9f96b",
+        "db316998",
+        "db316998",
+        "db316998",
+        "db316998",
+        "db316998",
+        "db316998",
+        "db316998",
+        "db316998"
+      ],
+      "shard_distribution": {
+        "db316998": 9,
+        "03b9f96b": 1
+      },
+      "result_sizes": [
+        364,
+        364,
+        364,
+        364,
+        364,
+        364,
+        364,
+        364,
+        364,
+        364
+      ],
+      "unique_result_sizes": [
+        364
+      ],
+      "multi_shard": true,
+      "num_unique_shards": 2
+    },
+    "Brno_houses_sale": {
+      "params": {
+        "category_main_cb": 2,
+        "category_type_cb": 1,
+        "locality_region_id": 14,
+        "per_page": 500,
+        "page": 1
+      },
+      "shard_fingerprints": [
+        "4aeea365",
+        "4aeea365",
+        "4aeea365",
+        "4aeea365",
+        "4aeea365",
+        "4aeea365",
+        "4aeea365",
+        "4aeea365",
+        "4aeea365",
+        "4aeea365"
+      ],
+      "shard_distribution": {
+        "4aeea365": 10
+      },
+      "result_sizes": [
+        2012,
+        2012,
+        2012,
+        2012,
+        2012,
+        2012,
+        2012,
+        2012,
+        2012,
+        2012
+      ],
+      "unique_result_sizes": [
+        2012
+      ],
+      "multi_shard": false,
+      "num_unique_shards": 1
+    }
+  },
+  "test4_sorting": {
+    "no_sort": {
+      "extra_params": {},
+      "shard_fingerprints": [
+        "450ce0cf",
+        "450ce0cf",
+        "dab33e67",
+        "de7e048d",
+        "450ce0cf",
+        "de7e048d",
+        "450ce0cf",
+        "450ce0cf",
+        "dab33e67",
+        "450ce0cf"
+      ],
+      "shard_distribution": {
+        "450ce0cf": 6,
+        "dab33e67": 2,
+        "de7e048d": 2
+      },
+      "result_sizes": [
+        68,
+        68,
+        68,
+        65,
+        68,
+        65,
+        68,
+        68,
+        68,
+        68
+      ],
+      "multi_shard": true,
+      "num_unique_shards": 3,
+      "total_unique_ids": 114,
+      "common_ids": 19
+    },
+    "sort_0_by_date": {
+      "extra_params": {
+        "sort": 0
+      },
+      "shard_fingerprints": [
+        "450ce0cf",
+        "450ce0cf",
+        "de7e048d",
+        "450ce0cf",
+        "450ce0cf",
+        "450ce0cf",
+        "450ce0cf",
+        "450ce0cf",
+        "de7e048d",
+        "450ce0cf"
+      ],
+      "shard_distribution": {
+        "450ce0cf": 8,
+        "de7e048d": 2
+      },
+      "result_sizes": [
+        68,
+        68,
+        65,
+        68,
+        68,
+        68,
+        68,
+        68,
+        65,
+        68
+      ],
+      "multi_shard": true,
+      "num_unique_shards": 2,
+      "total_unique_ids": 114,
+      "common_ids": 19
+    },
+    "sort_1_by_price": {
+      "extra_params": {
+        "sort": 1
+      },
+      "shard_fingerprints": [
+        "450ce0cf",
+        "450ce0cf",
+        "450ce0cf",
+        "450ce0cf",
+        "450ce0cf",
+        "450ce0cf",
+        "de7e048d",
+        "450ce0cf",
+        "de7e048d",
+        "450ce0cf"
+      ],
+      "shard_distribution": {
+        "450ce0cf": 8,
+        "de7e048d": 2
+      },
+      "result_sizes": [
+        68,
+        68,
+        68,
+        68,
+        68,
+        68,
+        65,
+        68,
+        65,
+        68
+      ],
+      "multi_shard": true,
+      "num_unique_shards": 2,
+      "total_unique_ids": 114,
+      "common_ids": 19
+    },
+    "sort_2_by_price_desc": {
+      "extra_params": {
+        "sort": 2
+      },
+      "shard_fingerprints": [
+        "450ce0cf",
+        "450ce0cf",
+        "450ce0cf",
+        "450ce0cf",
+        "450ce0cf",
+        "dab33e67",
+        "450ce0cf",
+        "de7e048d",
+        "450ce0cf",
+        "450ce0cf"
+      ],
+      "shard_distribution": {
+        "450ce0cf": 8,
+        "dab33e67": 1,
+        "de7e048d": 1
+      },
+      "result_sizes": [
+        68,
+        68,
+        68,
+        68,
+        68,
+        68,
+        68,
+        65,
+        68,
+        68
+      ],
+      "multi_shard": true,
+      "num_unique_shards": 3,
+      "total_unique_ids": 114,
+      "common_ids": 19
+    },
+    "sort_3_by_area": {
+      "extra_params": {
+        "sort": 3
+      },
+      "shard_fingerprints": [
+        "450ce0cf",
+        "450ce0cf",
+        "450ce0cf",
+        "450ce0cf",
+        "dab33e67",
+        "450ce0cf",
+        "450ce0cf",
+        "450ce0cf",
+        "450ce0cf",
+        "450ce0cf"
+      ],
+      "shard_distribution": {
+        "450ce0cf": 9,
+        "dab33e67": 1
+      },
+      "result_sizes": [
+        68,
+        68,
+        68,
+        68,
+        68,
+        68,
+        68,
+        68,
+        68,
+        68
+      ],
+      "multi_shard": true,
+      "num_unique_shards": 2,
+      "total_unique_ids": 69,
+      "common_ids": 68
+    }
+  },
+  "test5_time_correlation": {
+    "test": "time_based_correlation",
+    "num_requests": 100,
+    "delay_s": 0.1,
+    "total_time_s": 64.2,
+    "shard_distribution": {
+      "450ce0cf": 86,
+      "de7e048d": 6,
+      "dab33e67": 8
+    },
+    "alternation_rate": 0.263,
+    "avg_run_length": 3.7,
+    "max_run_length": 14,
+    "shard_sequence": [
+      "450ce0cf",
+      "450ce0cf",
+      "de7e048d",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "dab33e67",
+      "450ce0cf",
+      "dab33e67",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "dab33e67",
+      "450ce0cf",
+      "450ce0cf",
+      "dab33e67",
+      "450ce0cf",
+      "dab33e67",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "de7e048d",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "dab33e67",
+      "dab33e67",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "de7e048d",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "de7e048d",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "de7e048d",
+      "450ce0cf",
+      "de7e048d",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "dab33e67",
+      "450ce0cf",
+      "450ce0cf"
+    ],
+    "shard_letters": {
+      "450ce0cf": "A",
+      "dab33e67": "B",
+      "de7e048d": "C"
+    },
+    "requests": [
+      {
+        "request_num": 1,
+        "timestamp": "2026-04-18T21:05:12.192797",
+        "elapsed_since_start": 0.0,
+        "latency_ms": 452,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 2,
+        "timestamp": "2026-04-18T21:05:12.818226",
+        "elapsed_since_start": 0.554,
+        "latency_ms": 523,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 3,
+        "timestamp": "2026-04-18T21:05:13.352205",
+        "elapsed_since_start": 1.179,
+        "latency_ms": 432,
+        "shard": "de7e048d",
+        "result_size": 65,
+        "num_ids": 65
+      },
+      {
+        "request_num": 4,
+        "timestamp": "2026-04-18T21:05:13.948559",
+        "elapsed_since_start": 1.713,
+        "latency_ms": 494,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 5,
+        "timestamp": "2026-04-18T21:05:14.517621",
+        "elapsed_since_start": 2.31,
+        "latency_ms": 467,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 6,
+        "timestamp": "2026-04-18T21:05:15.101138",
+        "elapsed_since_start": 2.879,
+        "latency_ms": 481,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 7,
+        "timestamp": "2026-04-18T21:05:15.653649",
+        "elapsed_since_start": 3.462,
+        "latency_ms": 450,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 8,
+        "timestamp": "2026-04-18T21:05:16.282172",
+        "elapsed_since_start": 4.015,
+        "latency_ms": 526,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 9,
+        "timestamp": "2026-04-18T21:05:16.819947",
+        "elapsed_since_start": 4.643,
+        "latency_ms": 431,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 10,
+        "timestamp": "2026-04-18T21:05:17.442761",
+        "elapsed_since_start": 5.181,
+        "latency_ms": 521,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 11,
+        "timestamp": "2026-04-18T21:05:18.021764",
+        "elapsed_since_start": 5.804,
+        "latency_ms": 477,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 12,
+        "timestamp": "2026-04-18T21:05:18.578063",
+        "elapsed_since_start": 6.383,
+        "latency_ms": 454,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 13,
+        "timestamp": "2026-04-18T21:05:19.148736",
+        "elapsed_since_start": 6.939,
+        "latency_ms": 468,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 14,
+        "timestamp": "2026-04-18T21:05:19.710115",
+        "elapsed_since_start": 7.51,
+        "latency_ms": 459,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 15,
+        "timestamp": "2026-04-18T21:05:20.266619",
+        "elapsed_since_start": 8.072,
+        "latency_ms": 454,
+        "shard": "dab33e67",
+        "result_size": 68,
+        "num_ids": 69
+      },
+      {
+        "request_num": 16,
+        "timestamp": "2026-04-18T21:05:20.867188",
+        "elapsed_since_start": 8.628,
+        "latency_ms": 498,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 17,
+        "timestamp": "2026-04-18T21:05:21.421144",
+        "elapsed_since_start": 9.228,
+        "latency_ms": 452,
+        "shard": "dab33e67",
+        "result_size": 68,
+        "num_ids": 69
+      },
+      {
+        "request_num": 18,
+        "timestamp": "2026-04-18T21:05:21.943965",
+        "elapsed_since_start": 9.782,
+        "latency_ms": 421,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 19,
+        "timestamp": "2026-04-18T21:05:22.465485",
+        "elapsed_since_start": 10.305,
+        "latency_ms": 420,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 20,
+        "timestamp": "2026-04-18T21:05:23.038734",
+        "elapsed_since_start": 10.827,
+        "latency_ms": 471,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 21,
+        "timestamp": "2026-04-18T21:05:23.680646",
+        "elapsed_since_start": 11.4,
+        "latency_ms": 539,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 22,
+        "timestamp": "2026-04-18T21:05:24.256662",
+        "elapsed_since_start": 12.042,
+        "latency_ms": 474,
+        "shard": "dab33e67",
+        "result_size": 68,
+        "num_ids": 69
+      },
+      {
+        "request_num": 23,
+        "timestamp": "2026-04-18T21:05:24.841919",
+        "elapsed_since_start": 12.618,
+        "latency_ms": 483,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 24,
+        "timestamp": "2026-04-18T21:05:25.387525",
+        "elapsed_since_start": 13.203,
+        "latency_ms": 444,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 25,
+        "timestamp": "2026-04-18T21:05:26.000861",
+        "elapsed_since_start": 13.749,
+        "latency_ms": 511,
+        "shard": "dab33e67",
+        "result_size": 68,
+        "num_ids": 69
+      },
+      {
+        "request_num": 26,
+        "timestamp": "2026-04-18T21:05:26.514469",
+        "elapsed_since_start": 14.362,
+        "latency_ms": 411,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 27,
+        "timestamp": "2026-04-18T21:05:27.091570",
+        "elapsed_since_start": 14.876,
+        "latency_ms": 475,
+        "shard": "dab33e67",
+        "result_size": 68,
+        "num_ids": 69
+      },
+      {
+        "request_num": 28,
+        "timestamp": "2026-04-18T21:05:27.630182",
+        "elapsed_since_start": 15.453,
+        "latency_ms": 436,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 29,
+        "timestamp": "2026-04-18T21:05:28.197589",
+        "elapsed_since_start": 15.991,
+        "latency_ms": 465,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 30,
+        "timestamp": "2026-04-18T21:05:28.697436",
+        "elapsed_since_start": 16.559,
+        "latency_ms": 398,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 31,
+        "timestamp": "2026-04-18T21:05:29.277363",
+        "elapsed_since_start": 17.059,
+        "latency_ms": 477,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 32,
+        "timestamp": "2026-04-18T21:05:29.849268",
+        "elapsed_since_start": 17.639,
+        "latency_ms": 470,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 33,
+        "timestamp": "2026-04-18T21:05:30.405528",
+        "elapsed_since_start": 18.211,
+        "latency_ms": 454,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 34,
+        "timestamp": "2026-04-18T21:05:31.057930",
+        "elapsed_since_start": 18.767,
+        "latency_ms": 550,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 35,
+        "timestamp": "2026-04-18T21:05:31.622019",
+        "elapsed_since_start": 19.419,
+        "latency_ms": 462,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 36,
+        "timestamp": "2026-04-18T21:05:32.299199",
+        "elapsed_since_start": 19.983,
+        "latency_ms": 575,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 37,
+        "timestamp": "2026-04-18T21:05:32.905098",
+        "elapsed_since_start": 20.66,
+        "latency_ms": 503,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 38,
+        "timestamp": "2026-04-18T21:05:33.569753",
+        "elapsed_since_start": 21.266,
+        "latency_ms": 562,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 39,
+        "timestamp": "2026-04-18T21:05:34.253882",
+        "elapsed_since_start": 21.931,
+        "latency_ms": 582,
+        "shard": "de7e048d",
+        "result_size": 65,
+        "num_ids": 65
+      },
+      {
+        "request_num": 40,
+        "timestamp": "2026-04-18T21:05:34.798402",
+        "elapsed_since_start": 22.615,
+        "latency_ms": 442,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 41,
+        "timestamp": "2026-04-18T21:05:35.283316",
+        "elapsed_since_start": 23.16,
+        "latency_ms": 383,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 42,
+        "timestamp": "2026-04-18T21:05:35.834100",
+        "elapsed_since_start": 23.644,
+        "latency_ms": 449,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 43,
+        "timestamp": "2026-04-18T21:05:36.378409",
+        "elapsed_since_start": 24.195,
+        "latency_ms": 442,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 44,
+        "timestamp": "2026-04-18T21:05:36.923328",
+        "elapsed_since_start": 24.74,
+        "latency_ms": 442,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 45,
+        "timestamp": "2026-04-18T21:05:37.465400",
+        "elapsed_since_start": 25.285,
+        "latency_ms": 438,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 46,
+        "timestamp": "2026-04-18T21:05:38.054223",
+        "elapsed_since_start": 25.827,
+        "latency_ms": 487,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 47,
+        "timestamp": "2026-04-18T21:05:38.641063",
+        "elapsed_since_start": 26.416,
+        "latency_ms": 484,
+        "shard": "dab33e67",
+        "result_size": 68,
+        "num_ids": 69
+      },
+      {
+        "request_num": 48,
+        "timestamp": "2026-04-18T21:05:39.276715",
+        "elapsed_since_start": 27.002,
+        "latency_ms": 533,
+        "shard": "dab33e67",
+        "result_size": 68,
+        "num_ids": 69
+      },
+      {
+        "request_num": 49,
+        "timestamp": "2026-04-18T21:05:39.800606",
+        "elapsed_since_start": 27.638,
+        "latency_ms": 422,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 50,
+        "timestamp": "2026-04-18T21:05:40.374714",
+        "elapsed_since_start": 28.162,
+        "latency_ms": 472,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 51,
+        "timestamp": "2026-04-18T21:05:41.060723",
+        "elapsed_since_start": 28.736,
+        "latency_ms": 584,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 52,
+        "timestamp": "2026-04-18T21:05:41.643876",
+        "elapsed_since_start": 29.422,
+        "latency_ms": 481,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 53,
+        "timestamp": "2026-04-18T21:05:42.818255",
+        "elapsed_since_start": 30.005,
+        "latency_ms": 1072,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 54,
+        "timestamp": "2026-04-18T21:05:43.592918",
+        "elapsed_since_start": 31.18,
+        "latency_ms": 672,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 55,
+        "timestamp": "2026-04-18T21:05:44.247305",
+        "elapsed_since_start": 31.954,
+        "latency_ms": 552,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 56,
+        "timestamp": "2026-04-18T21:05:44.798707",
+        "elapsed_since_start": 32.609,
+        "latency_ms": 449,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 57,
+        "timestamp": "2026-04-18T21:05:45.334307",
+        "elapsed_since_start": 33.16,
+        "latency_ms": 433,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 58,
+        "timestamp": "2026-04-18T21:05:45.892206",
+        "elapsed_since_start": 33.696,
+        "latency_ms": 455,
+        "shard": "de7e048d",
+        "result_size": 65,
+        "num_ids": 65
+      },
+      {
+        "request_num": 59,
+        "timestamp": "2026-04-18T21:05:46.528814",
+        "elapsed_since_start": 34.253,
+        "latency_ms": 535,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 60,
+        "timestamp": "2026-04-18T21:05:47.082260",
+        "elapsed_since_start": 34.89,
+        "latency_ms": 451,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 61,
+        "timestamp": "2026-04-18T21:05:47.726831",
+        "elapsed_since_start": 35.444,
+        "latency_ms": 542,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 62,
+        "timestamp": "2026-04-18T21:05:48.274817",
+        "elapsed_since_start": 36.088,
+        "latency_ms": 446,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 63,
+        "timestamp": "2026-04-18T21:05:48.831623",
+        "elapsed_since_start": 36.636,
+        "latency_ms": 455,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 64,
+        "timestamp": "2026-04-18T21:05:49.414988",
+        "elapsed_since_start": 37.193,
+        "latency_ms": 482,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 65,
+        "timestamp": "2026-04-18T21:05:50.028882",
+        "elapsed_since_start": 37.776,
+        "latency_ms": 511,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 66,
+        "timestamp": "2026-04-18T21:05:50.637223",
+        "elapsed_since_start": 38.39,
+        "latency_ms": 506,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 67,
+        "timestamp": "2026-04-18T21:05:51.207953",
+        "elapsed_since_start": 38.998,
+        "latency_ms": 468,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 68,
+        "timestamp": "2026-04-18T21:05:51.914628",
+        "elapsed_since_start": 39.569,
+        "latency_ms": 604,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 69,
+        "timestamp": "2026-04-18T21:05:52.591391",
+        "elapsed_since_start": 40.276,
+        "latency_ms": 574,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 70,
+        "timestamp": "2026-04-18T21:05:54.224316",
+        "elapsed_since_start": 40.953,
+        "latency_ms": 1531,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 71,
+        "timestamp": "2026-04-18T21:05:55.059838",
+        "elapsed_since_start": 42.586,
+        "latency_ms": 733,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 72,
+        "timestamp": "2026-04-18T21:05:56.082042",
+        "elapsed_since_start": 43.421,
+        "latency_ms": 920,
+        "shard": "de7e048d",
+        "result_size": 65,
+        "num_ids": 65
+      },
+      {
+        "request_num": 73,
+        "timestamp": "2026-04-18T21:05:56.901601",
+        "elapsed_since_start": 44.443,
+        "latency_ms": 718,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 74,
+        "timestamp": "2026-04-18T21:05:57.927949",
+        "elapsed_since_start": 45.263,
+        "latency_ms": 924,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 75,
+        "timestamp": "2026-04-18T21:05:58.638467",
+        "elapsed_since_start": 46.289,
+        "latency_ms": 608,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 76,
+        "timestamp": "2026-04-18T21:05:59.184779",
+        "elapsed_since_start": 47.0,
+        "latency_ms": 444,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 77,
+        "timestamp": "2026-04-18T21:05:59.964345",
+        "elapsed_since_start": 47.546,
+        "latency_ms": 677,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 78,
+        "timestamp": "2026-04-18T21:06:00.764497",
+        "elapsed_since_start": 48.326,
+        "latency_ms": 698,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 79,
+        "timestamp": "2026-04-18T21:06:01.613212",
+        "elapsed_since_start": 49.126,
+        "latency_ms": 747,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 80,
+        "timestamp": "2026-04-18T21:06:02.620562",
+        "elapsed_since_start": 49.974,
+        "latency_ms": 904,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 81,
+        "timestamp": "2026-04-18T21:06:03.858382",
+        "elapsed_since_start": 50.982,
+        "latency_ms": 1135,
+        "shard": "de7e048d",
+        "result_size": 65,
+        "num_ids": 65
+      },
+      {
+        "request_num": 82,
+        "timestamp": "2026-04-18T21:06:04.417515",
+        "elapsed_since_start": 52.22,
+        "latency_ms": 457,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 83,
+        "timestamp": "2026-04-18T21:06:05.036310",
+        "elapsed_since_start": 52.779,
+        "latency_ms": 517,
+        "shard": "de7e048d",
+        "result_size": 65,
+        "num_ids": 65
+      },
+      {
+        "request_num": 84,
+        "timestamp": "2026-04-18T21:06:05.707268",
+        "elapsed_since_start": 53.398,
+        "latency_ms": 569,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 85,
+        "timestamp": "2026-04-18T21:06:06.320422",
+        "elapsed_since_start": 54.068,
+        "latency_ms": 511,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 86,
+        "timestamp": "2026-04-18T21:06:07.140304",
+        "elapsed_since_start": 54.682,
+        "latency_ms": 718,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 87,
+        "timestamp": "2026-04-18T21:06:07.806049",
+        "elapsed_since_start": 55.502,
+        "latency_ms": 563,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 88,
+        "timestamp": "2026-04-18T21:06:08.314365",
+        "elapsed_since_start": 56.167,
+        "latency_ms": 406,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 89,
+        "timestamp": "2026-04-18T21:06:08.873345",
+        "elapsed_since_start": 56.676,
+        "latency_ms": 457,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 90,
+        "timestamp": "2026-04-18T21:06:09.493361",
+        "elapsed_since_start": 57.235,
+        "latency_ms": 518,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 91,
+        "timestamp": "2026-04-18T21:06:10.209344",
+        "elapsed_since_start": 57.855,
+        "latency_ms": 614,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 92,
+        "timestamp": "2026-04-18T21:06:11.028801",
+        "elapsed_since_start": 58.571,
+        "latency_ms": 717,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 93,
+        "timestamp": "2026-04-18T21:06:11.716639",
+        "elapsed_since_start": 59.39,
+        "latency_ms": 585,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 94,
+        "timestamp": "2026-04-18T21:06:12.248893",
+        "elapsed_since_start": 60.078,
+        "latency_ms": 430,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 95,
+        "timestamp": "2026-04-18T21:06:12.861861",
+        "elapsed_since_start": 60.61,
+        "latency_ms": 511,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 96,
+        "timestamp": "2026-04-18T21:06:13.410873",
+        "elapsed_since_start": 61.223,
+        "latency_ms": 447,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 97,
+        "timestamp": "2026-04-18T21:06:14.010147",
+        "elapsed_since_start": 61.772,
+        "latency_ms": 497,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 98,
+        "timestamp": "2026-04-18T21:06:14.592512",
+        "elapsed_since_start": 62.372,
+        "latency_ms": 480,
+        "shard": "dab33e67",
+        "result_size": 68,
+        "num_ids": 69
+      },
+      {
+        "request_num": 99,
+        "timestamp": "2026-04-18T21:06:15.275792",
+        "elapsed_since_start": 62.954,
+        "latency_ms": 581,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      },
+      {
+        "request_num": 100,
+        "timestamp": "2026-04-18T21:06:15.790010",
+        "elapsed_since_start": 63.637,
+        "latency_ms": 412,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "num_ids": 68
+      }
+    ]
+  },
+  "test6_etag_caching": {
+    "test": "etag_caching",
+    "etags_found": [],
+    "last_modified_found": [],
+    "cache_headers_summary": {
+      "cache-control": 20,
+      "expires": 20
+    },
+    "requests": [
+      {
+        "request_num": 1,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "cache_headers": {
+          "cache-control": "no-cache=\"set-cookie\"",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT"
+        }
+      },
+      {
+        "request_num": 2,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "cache_headers": {
+          "cache-control": "no-cache=\"set-cookie\"",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT"
+        }
+      },
+      {
+        "request_num": 3,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "cache_headers": {
+          "cache-control": "no-cache=\"set-cookie\"",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT"
+        }
+      },
+      {
+        "request_num": 4,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "cache_headers": {
+          "cache-control": "no-cache=\"set-cookie\"",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT"
+        }
+      },
+      {
+        "request_num": 5,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "cache_headers": {
+          "cache-control": "no-cache=\"set-cookie\"",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT"
+        }
+      },
+      {
+        "request_num": 6,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "cache_headers": {
+          "cache-control": "no-cache=\"set-cookie\"",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT"
+        }
+      },
+      {
+        "request_num": 7,
+        "shard": "de7e048d",
+        "result_size": 65,
+        "cache_headers": {
+          "cache-control": "no-cache=\"set-cookie\"",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT"
+        }
+      },
+      {
+        "request_num": 8,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "cache_headers": {
+          "cache-control": "no-cache=\"set-cookie\"",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT"
+        }
+      },
+      {
+        "request_num": 9,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "cache_headers": {
+          "cache-control": "no-cache=\"set-cookie\"",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT"
+        }
+      },
+      {
+        "request_num": 10,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "cache_headers": {
+          "cache-control": "no-cache=\"set-cookie\"",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT"
+        }
+      },
+      {
+        "request_num": 11,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "cache_headers": {
+          "cache-control": "no-cache=\"set-cookie\"",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT"
+        }
+      },
+      {
+        "request_num": 12,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "cache_headers": {
+          "cache-control": "no-cache=\"set-cookie\"",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT"
+        }
+      },
+      {
+        "request_num": 13,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "cache_headers": {
+          "cache-control": "no-cache=\"set-cookie\"",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT"
+        }
+      },
+      {
+        "request_num": 14,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "cache_headers": {
+          "cache-control": "no-cache=\"set-cookie\"",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT"
+        }
+      },
+      {
+        "request_num": 15,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "cache_headers": {
+          "cache-control": "no-cache=\"set-cookie\"",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT"
+        }
+      },
+      {
+        "request_num": 16,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "cache_headers": {
+          "cache-control": "no-cache=\"set-cookie\"",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT"
+        }
+      },
+      {
+        "request_num": 17,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "cache_headers": {
+          "cache-control": "no-cache=\"set-cookie\"",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT"
+        }
+      },
+      {
+        "request_num": 18,
+        "shard": "450ce0cf",
+        "result_size": 68,
+        "cache_headers": {
+          "cache-control": "no-cache=\"set-cookie\"",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT"
+        }
+      },
+      {
+        "request_num": 19,
+        "shard": "dab33e67",
+        "result_size": 68,
+        "cache_headers": {
+          "cache-control": "no-cache=\"set-cookie\"",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT"
+        }
+      },
+      {
+        "request_num": 20,
+        "shard": "dab33e67",
+        "result_size": 68,
+        "cache_headers": {
+          "cache-control": "no-cache=\"set-cookie\"",
+          "expires": "Thu, 1 Jan 1970 08:00:00 GMT"
+        }
+      }
+    ]
+  }
+}

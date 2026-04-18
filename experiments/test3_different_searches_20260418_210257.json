@@ -1,0 +1,130 @@
+{
+  "Praha_7_rent_17k25k": {
+    "params": {
+      "category_main_cb": 1,
+      "category_type_cb": 2,
+      "locality_district_id": 5007,
+      "per_page": 500,
+      "page": 1,
+      "czk_price_summary_order2": "17000|25000"
+    },
+    "shard_fingerprints": [
+      "dab33e67",
+      "450ce0cf",
+      "450ce0cf",
+      "450ce0cf",
+      "de7e048d",
+      "de7e048d",
+      "450ce0cf",
+      "450ce0cf",
+      "dab33e67",
+      "450ce0cf"
+    ],
+    "shard_distribution": {
+      "dab33e67": 2,
+      "450ce0cf": 6,
+      "de7e048d": 2
+    },
+    "result_sizes": [
+      68,
+      68,
+      68,
+      68,
+      65,
+      65,
+      68,
+      68,
+      68,
+      68
+    ],
+    "unique_result_sizes": [
+      65,
+      68
+    ],
+    "multi_shard": true,
+    "num_unique_shards": 3
+  },
+  "Praha_1_rent_all": {
+    "params": {
+      "category_main_cb": 1,
+      "category_type_cb": 2,
+      "locality_district_id": 5001,
+      "per_page": 500,
+      "page": 1
+    },
+    "shard_fingerprints": [
+      "db316998",
+      "03b9f96b",
+      "db316998",
+      "db316998",
+      "db316998",
+      "db316998",
+      "db316998",
+      "db316998",
+      "db316998",
+      "db316998"
+    ],
+    "shard_distribution": {
+      "db316998": 9,
+      "03b9f96b": 1
+    },
+    "result_sizes": [
+      364,
+      364,
+      364,
+      364,
+      364,
+      364,
+      364,
+      364,
+      364,
+      364
+    ],
+    "unique_result_sizes": [
+      364
+    ],
+    "multi_shard": true,
+    "num_unique_shards": 2
+  },
+  "Brno_houses_sale": {
+    "params": {
+      "category_main_cb": 2,
+      "category_type_cb": 1,
+      "locality_region_id": 14,
+      "per_page": 500,
+      "page": 1
+    },
+    "shard_fingerprints": [
+      "4aeea365",
+      "4aeea365",
+      "4aeea365",
+      "4aeea365",
+      "4aeea365",
+      "4aeea365",
+      "4aeea365",
+      "4aeea365",
+      "4aeea365",
+      "4aeea365"
+    ],
+    "shard_distribution": {
+      "4aeea365": 10
+    },
+    "result_sizes": [
+      2012,
+      2012,
+      2012,
+      2012,
+      2012,
+      2012,
+      2012,
+      2012,
+      2012,
+      2012
+    ],
+    "unique_result_sizes": [
+      2012
+    ],
+    "multi_shard": false,
+    "num_unique_shards": 1
+  }
+}

@@ -1,0 +1,347 @@
+[
+  {
+    "time": "2026-04-18T20:21:04.592427",
+    "backends": {
+      "de7e048d": {
+        "count": 2,
+        "num_ids": 65
+      },
+      "450ce0cf": {
+        "count": 8,
+        "num_ids": 68
+      }
+    },
+    "total_unique": 114,
+    "new_backends": [
+      "450ce0cf",
+      "de7e048d"
+    ]
+  },
+  {
+    "time": "2026-04-18T20:21:34.592594",
+    "backends": {
+      "de7e048d": {
+        "count": 2,
+        "num_ids": 65
+      },
+      "450ce0cf": {
+        "count": 7,
+        "num_ids": 68
+      },
+      "dab33e67": {
+        "count": 1,
+        "num_ids": 69
+      }
+    },
+    "total_unique": 114,
+    "new_backends": [
+      "dab33e67"
+    ]
+  },
+  {
+    "time": "2026-04-18T20:22:04.592589",
+    "backends": {
+      "450ce0cf": {
+        "count": 10,
+        "num_ids": 68
+      }
+    },
+    "total_unique": 68,
+    "new_backends": []
+  },
+  {
+    "time": "2026-04-18T20:22:34.592623",
+    "backends": {
+      "450ce0cf": {
+        "count": 5,
+        "num_ids": 68
+      },
+      "dab33e67": {
+        "count": 3,
+        "num_ids": 69
+      },
+      "de7e048d": {
+        "count": 2,
+        "num_ids": 65
+      }
+    },
+    "total_unique": 114,
+    "new_backends": []
+  },
+  {
+    "time": "2026-04-18T20:23:04.592574",
+    "backends": {
+      "dab33e67": {
+        "count": 3,
+        "num_ids": 69
+      },
+      "de7e048d": {
+        "count": 4,
+        "num_ids": 65
+      },
+      "450ce0cf": {
+        "count": 3,
+        "num_ids": 68
+      }
+    },
+    "total_unique": 114,
+    "new_backends": []
+  },
+  {
+    "time": "2026-04-18T20:23:34.592553",
+    "backends": {
+      "dab33e67": {
+        "count": 4,
+        "num_ids": 69
+      },
+      "450ce0cf": {
+        "count": 4,
+        "num_ids": 68
+      },
+      "de7e048d": {
+        "count": 2,
+        "num_ids": 65
+      }
+    },
+    "total_unique": 114,
+    "new_backends": []
+  },
+  {
+    "time": "2026-04-18T20:24:04.592547",
+    "backends": {
+      "450ce0cf": {
+        "count": 4,
+        "num_ids": 68
+      },
+      "dab33e67": {
+        "count": 3,
+        "num_ids": 69
+      },
+      "de7e048d": {
+        "count": 3,
+        "num_ids": 65
+      }
+    },
+    "total_unique": 114,
+    "new_backends": []
+  },
+  {
+    "time": "2026-04-18T20:24:34.592561",
+    "backends": {
+      "450ce0cf": {
+        "count": 6,
+        "num_ids": 68
+      },
+      "de7e048d": {
+        "count": 3,
+        "num_ids": 65
+      },
+      "dab33e67": {
+        "count": 1,
+        "num_ids": 69
+      }
+    },
+    "total_unique": 114,
+    "new_backends": []
+  },
+  {
+    "time": "2026-04-18T20:25:04.592548",
+    "backends": {
+      "de7e048d": {
+        "count": 3,
+        "num_ids": 65
+      },
+      "450ce0cf": {
+        "count": 7,
+        "num_ids": 68
+      }
+    },
+    "total_unique": 114,
+    "new_backends": []
+  },
+  {
+    "time": "2026-04-18T20:25:34.592646",
+    "backends": {
+      "450ce0cf": {
+        "count": 6,
+        "num_ids": 68
+      },
+      "de7e048d": {
+        "count": 3,
+        "num_ids": 65
+      },
+      "dab33e67": {
+        "count": 1,
+        "num_ids": 69
+      }
+    },
+    "total_unique": 114,
+    "new_backends": []
+  },
+  {
+    "time": "2026-04-18T20:26:04.592549",
+    "backends": {
+      "450ce0cf": {
+        "count": 10,
+        "num_ids": 68
+      }
+    },
+    "total_unique": 68,
+    "new_backends": []
+  },
+  {
+    "time": "2026-04-18T20:26:34.592776",
+    "backends": {
+      "450ce0cf": {
+        "count": 8,
+        "num_ids": 68
+      },
+      "de7e048d": {
+        "count": 2,
+        "num_ids": 65
+      }
+    },
+    "total_unique": 114,
+    "new_backends": []
+  },
+  {
+    "time": "2026-04-18T20:27:04.592566",
+    "backends": {
+      "450ce0cf": {
+        "count": 8,
+        "num_ids": 68
+      },
+      "dab33e67": {
+        "count": 2,
+        "num_ids": 69
+      }
+    },
+    "total_unique": 69,
+    "new_backends": []
+  },
+  {
+    "time": "2026-04-18T20:27:34.592594",
+    "backends": {
+      "450ce0cf": {
+        "count": 8,
+        "num_ids": 68
+      },
+      "dab33e67": {
+        "count": 1,
+        "num_ids": 69
+      },
+      "de7e048d": {
+        "count": 1,
+        "num_ids": 65
+      }
+    },
+    "total_unique": 114,
+    "new_backends": []
+  },
+  {
+    "time": "2026-04-18T20:28:04.592577",
+    "backends": {
+      "450ce0cf": {
+        "count": 7,
+        "num_ids": 68
+      },
+      "de7e048d": {
+        "count": 2,
+        "num_ids": 65
+      },
+      "dab33e67": {
+        "count": 1,
+        "num_ids": 69
+      }
+    },
+    "total_unique": 114,
+    "new_backends": []
+  },
+  {
+    "time": "2026-04-18T20:28:34.592579",
+    "backends": {
+      "dab33e67": {
+        "count": 1,
+        "num_ids": 69
+      },
+      "450ce0cf": {
+        "count": 8,
+        "num_ids": 68
+      },
+      "de7e048d": {
+        "count": 1,
+        "num_ids": 65
+      }
+    },
+    "total_unique": 114,
+    "new_backends": []
+  },
+  {
+    "time": "2026-04-18T20:29:04.592568",
+    "backends": {
+      "de7e048d": {
+        "count": 3,
+        "num_ids": 65
+      },
+      "450ce0cf": {
+        "count": 4,
+        "num_ids": 68
+      },
+      "dab33e67": {
+        "count": 3,
+        "num_ids": 69
+      }
+    },
+    "total_unique": 114,
+    "new_backends": []
+  },
+  {
+    "time": "2026-04-18T20:29:34.592544",
+    "backends": {
+      "450ce0cf": {
+        "count": 10,
+        "num_ids": 68
+      }
+    },
+    "total_unique": 68,
+    "new_backends": []
+  },
+  {
+    "time": "2026-04-18T20:30:04.592926",
+    "backends": {
+      "450ce0cf": {
+        "count": 6,
+        "num_ids": 68
+      },
+      "dab33e67": {
+        "count": 2,
+        "num_ids": 69
+      },
+      "de7e048d": {
+        "count": 2,
+        "num_ids": 65
+      }
+    },
+    "total_unique": 114,
+    "new_backends": []
+  },
+  {
+    "time": "2026-04-18T20:30:34.592568",
+    "backends": {
+      "450ce0cf": {
+        "count": 6,
+        "num_ids": 68
+      },
+      "de7e048d": {
+        "count": 3,
+        "num_ids": 65
+      },
+      "dab33e67": {
+        "count": 1,
+        "num_ids": 69
+      }
+    },
+    "total_unique": 114,
+    "new_backends": []
+  }
+]

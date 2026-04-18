@@ -1,4 +1,4 @@
-# Byt Watchdog
+# RentCzecher
 
 Multi-profile real estate monitor for the Czech Republic. Scrapes major Czech real estate sites, deduplicates, scores, and emails new listings - supports any combination of location, property type, and offer type.
 

@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 VENV_DIR="$SCRIPT_DIR/venv"
 CRON_HOURS="${1:-3}"
 
-echo "=== Byt Watchdog - Install ==="
+echo "=== RentCzecher - Install ==="
 
 # Create venv if it doesn't exist
 if [ ! -d "$VENV_DIR" ]; then

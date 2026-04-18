@@ -5,7 +5,7 @@ import os
 import tempfile
 from datetime import datetime, timezone, timedelta
 
-log = logging.getLogger("byt_watchdog")
+log = logging.getLogger("rentczecher")
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 

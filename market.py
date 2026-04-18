@@ -3,7 +3,7 @@
 import logging
 from scrapers.base import Listing
 
-log = logging.getLogger("byt_watchdog")
+log = logging.getLogger("rentczecher")
 
 
 def compute_price_position(listing: Listing, all_seen: dict) -> dict | None:

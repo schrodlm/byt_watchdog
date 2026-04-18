@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Byt Watchdog - Multi-profile real estate monitor."""
+"""RentCzecher - Multi-profile real estate monitor."""
 
 import argparse
 import logging
@@ -21,7 +21,7 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
-log = logging.getLogger("byt_watchdog")
+log = logging.getLogger("rentczecher")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_PATH = os.path.join(BASE_DIR, "config.yaml")
@@ -284,7 +284,7 @@ def run(dry_run: bool = False, profile_filter: str | None = None):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Byt Watchdog - Real estate monitor")
+    parser = argparse.ArgumentParser(description="RentCzecher - Real estate monitor")
     parser.add_argument("--dry-run", action="store_true",
                         help="Scrape and show results without sending email or updating DB")
     parser.add_argument("--profile", type=str, default=None,

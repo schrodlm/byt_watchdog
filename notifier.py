@@ -142,7 +142,7 @@ def _render_card(listing: Listing, is_rent: bool) -> str:
         savings_str = f"{savings:,}".replace(",", NBSP)
         drop_html = (
             f'<div style="font-size:13px;color:#d93025;font-weight:600;margin-bottom:4px;">'
-            f'SLEVA z {old_price} (−{savings_str}{NBSP}Kč)</div>'
+            f'Zlevněno z {old_price} (−{savings_str}{NBSP}Kč)</div>'
         )
 
     # Detail chips (pill-style tags that wrap on mobile)
@@ -335,7 +335,7 @@ def send_email(listings: list[Listing], email_cfg: dict, profile: dict | None = 
         return
 
     profile = profile or {}
-    profile_name = profile.get("name", "Byt Watchdog")
+    profile_name = profile.get("name", "RentCzecher")
     is_rent = profile.get("search", {}).get("offer_type", "rent") == "rent"
 
     # Sort by score descending
@@ -399,7 +399,7 @@ def send_email(listings: list[Listing], email_cfg: dict, profile: dict | None = 
   {cards_html}
   {disappeared_html}
   {footer_html}
-  <p style="text-align:center;color:#999999;font-size:12px;margin-top:24px;">Byt Watchdog</p>
+  <p style="text-align:center;color:#999999;font-size:12px;margin-top:24px;">RentCzecher</p>
 </div>
 </body>
 </html>"""
@@ -408,7 +408,7 @@ def send_email(listings: list[Listing], email_cfg: dict, profile: dict | None = 
     msg["Subject"] = subject
     msg["From"] = email_cfg["from"]
     msg["Date"] = formatdate(localtime=True)
-    msg["Message-ID"] = make_msgid(domain="byt-watchdog")
+    msg["Message-ID"] = make_msgid(domain="rentczecher")
 
     recipients = email_cfg.get("to", [])
     if isinstance(recipients, str):
@@ -420,9 +420,9 @@ def send_email(listings: list[Listing], email_cfg: dict, profile: dict | None = 
     for l in listings:
         extras = []
         if l.urgency == "hot":
-            extras.append("DOPORUCUJEME")
+            extras.append("skóre 75%+")
         if l.price_drop_from:
-            extras.append(f"SLEVA z {_format_price_plain(l.price_drop_from, is_rent)}")
+            extras.append(f"zlevněno z {_format_price_plain(l.price_drop_from, is_rent)}")
         if l.land_m2:
             extras.append(f"pozemek {l.land_m2} m2")
         if l.nearest_stop:

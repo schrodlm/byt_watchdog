@@ -1,4 +1,4 @@
-# Byt Watchdog - Multi-profile configuration
+# RentCzecher - Multi-profile configuration
 # Each profile is an independent search with its own scrapers, filters, and recipients.
 
 email:

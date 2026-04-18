@@ -7,26 +7,34 @@ log = logging.getLogger("byt_watchdog")
 
 
 def compute_price_position(listing: Listing, all_seen: dict) -> dict | None:
-    """Compute how a listing's price compares to the market.
+    """Compute how a listing's price compares to similarly-sized listings.
+
+    Compares against all historically seen listings within ±15m2 of this listing's size.
+    This is more factual than grouping by disposition - a 50m2 flat is comparable to
+    other 35-65m2 flats regardless of whether they're 2+kk or 1+1.
 
     Returns dict with percentile and comparable stats, or None if insufficient data.
     """
-    if not listing.price or not listing.disposition:
+    if not listing.price or not listing.size_m2:
         return None
 
-    # Find comparable listings: same disposition, with price and size
+    size_tolerance = 15  # m2
+    size_min = listing.size_m2 - size_tolerance
+    size_max = listing.size_m2 + size_tolerance
+
     comparables = []
     for lid, entry in all_seen.items():
         if not isinstance(entry, dict):
             continue
-        if entry.get("disposition") != listing.disposition:
+        entry_size = entry.get("size_m2")
+        if not entry_size or entry_size < size_min or entry_size > size_max:
             continue
         price = entry.get("price", 0)
         if price > 0:
             comparables.append(price)
 
     if len(comparables) < 5:
-        return None  # Not enough data for meaningful comparison
+        return None
 
     comparables.sort()
     n = len(comparables)
@@ -90,6 +98,6 @@ def enrich_market_data(listings: list[Listing], all_seen: dict) -> None:
         listing.price_percentile = position["percentile"]
         listing.market_median = position["median"]
 
-        # Boost urgency for listings well below market
+        # Boost urgency for listings well below market (cheaper than 75% of similar size)
         if position["percentile"] >= 75 and listing.urgency != "hot" and listing.score >= 50:
             listing.urgency = "hot"

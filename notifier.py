@@ -49,14 +49,14 @@ def _score_badge(listing: Listing) -> str:
 
 
 def _market_chip(listing: Listing) -> str:
-    """Render price percentile as a factual chip, e.g. 'levnější než 73% 2+kk'."""
-    if listing.price_percentile is None or not listing.disposition:
+    """Render price percentile as a factual chip, e.g. 'levnější než 73% podobných (~50 m²)'."""
+    if listing.price_percentile is None or not listing.size_m2:
         return ""
     return (
         f'<span style="display:inline-block;padding:2px 8px;margin:2px 2px;'
         f'background:#e8f5e9;border-radius:12px;font-size:12px;color:#2e7d32;'
         f'white-space:nowrap;">levnější než {listing.price_percentile}%'
-        f' {escape(listing.disposition)}</span>'
+        f' podobných (~{listing.size_m2}{NBSP}m²)</span>'
     )
 
 
@@ -258,6 +258,19 @@ def _render_disappeared_section(disappeared: list[dict], is_rent: bool) -> str:
     </div>"""
 
 
+def _render_score_legend() -> str:
+    """Render a subtle footnote explaining the score and market percentile."""
+    return (
+        '<div style="margin-top:20px;padding-top:12px;border-top:1px solid #e0e0e0;'
+        'font-size:11px;color:#999999;line-height:1.6;">'
+        '<strong style="color:#888888;">Jak počítáme procenta?</strong><br>'
+        'Skóre = vážený průměr: cena/m², dispozice, velikost a lokalita dle preferencí v profilu.<br>'
+        'Tržní srovnání (např. "levnější než 73% podobných ~50 m²") = cenový percentil vůči všem'
+        ' historicky viděným nabídkám podobné velikosti (±15 m²).'
+        '</div>'
+    )
+
+
 def _render_market_summary(listings: list[Listing], all_seen: dict, is_rent: bool) -> str:
     """Render a brief market summary footer with factual stats."""
     from market import compute_avg_time_on_market
@@ -331,6 +344,7 @@ def send_email(listings: list[Listing], email_cfg: dict, profile: dict | None = 
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     disappeared_html = _render_disappeared_section(disappeared or [], is_rent)
     market_html = _render_market_summary(listings, all_seen or {}, is_rent)
+    legend_html = _render_score_legend()
 
     new_count = sum(1 for l in listings if not l.price_drop_from)
     drop_count = sum(1 for l in listings if l.price_drop_from)
@@ -385,6 +399,7 @@ def send_email(listings: list[Listing], email_cfg: dict, profile: dict | None = 
   {cards_html}
   {disappeared_html}
   {market_html}
+  {legend_html}
   <p style="text-align:center;color:#999999;font-size:12px;margin-top:24px;">Byt Watchdog</p>
 </div>
 </body>

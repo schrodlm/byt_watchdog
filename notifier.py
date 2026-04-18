@@ -7,6 +7,8 @@ from html import escape
 
 from scrapers.base import Listing
 
+NBSP = "\u00a0"  # Non-breaking space (works in both HTML and plain text)
+
 
 def _safe_url(url: str) -> str:
     if url and url.startswith(("https://", "http://")):
@@ -15,11 +17,19 @@ def _safe_url(url: str) -> str:
 
 
 def _format_price(price: int, is_rent: bool) -> str:
-    """Format price with spaces as thousand separator."""
+    """Format price with non-breaking spaces as thousand separator + Kč."""
+    formatted = f"{price:,}".replace(",", NBSP)
+    if is_rent:
+        return f"{formatted}{NBSP}Kč/měsíc"
+    return f"{formatted}{NBSP}Kč"
+
+
+def _format_price_plain(price: int, is_rent: bool) -> str:
+    """Format price for plain text (regular spaces)."""
     formatted = f"{price:,}".replace(",", " ")
     if is_rent:
-        return f"{formatted} Kc/mesic"
-    return f"{formatted} Kc"
+        return f"{formatted} Kč/měsíc"
+    return f"{formatted} Kč"
 
 
 def _render_card(listing: Listing, is_rent: bool) -> str:
@@ -36,27 +46,34 @@ def _render_card(listing: Listing, is_rent: bool) -> str:
     }
     badge_style, badge_label = badge_colors.get(listing.source, ("background:#eee;color:#333;", source))
 
-    # Image
+    # Image - natural aspect ratio, constrained width, no clipping
     img_html = ""
     if listing.image_url:
         img_url = _safe_url(listing.image_url)
-        img_html = f'<img src="{img_url}" alt="{title}" style="width:100%;max-height:200px;display:block;">'
+        alt_text = escape(f"{listing.title} - {listing.disposition or ''} {listing.location}".strip(" -"))
+        img_html = (
+            f'<div style="width:100%;background:#f0f0f0;">'
+            f'<img src="{img_url}" alt="{alt_text}" width="660" '
+            f'style="width:100%;max-width:660px;height:auto;display:block;border:0;" />'
+            f'</div>'
+        )
 
     # Price
-    price_html = f'<div style="font-size:20px;font-weight:700;color:#1a8917;margin-bottom:8px;">{_format_price(listing.price, is_rent)}'
+    price_str = _format_price(listing.price, is_rent)
+    price_html = f'<div style="font-size:20px;font-weight:700;color:#1a8917;margin-bottom:8px;">{price_str}'
 
     if listing.price_drop_from:
         old_price = _format_price(listing.price_drop_from, is_rent)
         savings = listing.price_drop_from - listing.price
-        savings_str = f"{savings:,}".replace(",", " ")
+        savings_str = f"{savings:,}".replace(",", NBSP)
         price_html += (
             f' <span style="font-size:13px;color:#d93025;font-weight:600;">'
-            f'SLEVA z {old_price} (-{savings_str} Kc)</span>'
+            f'SLEVA z {old_price} (-{savings_str}{NBSP}Kč)</span>'
         )
 
     if listing.charges and is_rent:
-        charges_str = f"{listing.charges:,}".replace(",", " ")
-        price_html += f' <span style="font-size:13px;color:#888;">+ {charges_str} poplatky</span>'
+        charges_str = f"{listing.charges:,}".replace(",", NBSP)
+        price_html += f' <span style="font-size:13px;color:#888;">+{NBSP}{charges_str} poplatky</span>'
 
     price_html += '</div>'
 
@@ -65,22 +82,21 @@ def _render_card(listing: Listing, is_rent: bool) -> str:
     if disposition:
         details.append(disposition)
     if listing.size_m2:
-        details.append(f"{listing.size_m2} m&sup2;")
+        details.append(f"{listing.size_m2}{NBSP}m&sup2;")
         if is_rent and listing.size_m2 > 0:
             ppm2 = round(listing.price / listing.size_m2)
-            details.append(f"{ppm2} Kc/m&sup2;")
+            details.append(f"{ppm2}{NBSP}Kč/m&sup2;")
     if listing.land_m2:
-        land_str = f"{listing.land_m2:,}".replace(",", " ")
-        details.append(f"pozemek {land_str} m&sup2;")
+        land_str = f"{listing.land_m2:,}".replace(",", NBSP)
+        details.append(f"pozemek {land_str}{NBSP}m&sup2;")
     if location:
         details.append(location)
 
-    # Tram/transport stop
     if listing.nearest_stop and listing.stop_distance_m is not None:
         if listing.stop_distance_m < 1000:
-            stop_str = f"{escape(listing.nearest_stop)} ({listing.stop_distance_m} m)"
+            stop_str = f"{escape(listing.nearest_stop)} ({listing.stop_distance_m}{NBSP}m)"
         else:
-            stop_str = f"{escape(listing.nearest_stop)} ({listing.stop_distance_m / 1000:.1f} km)"
+            stop_str = f"{escape(listing.nearest_stop)} ({listing.stop_distance_m / 1000:.1f}{NBSP}km)"
         details.append(stop_str)
 
     details_html = " &middot; ".join(
@@ -109,19 +125,19 @@ def _render_card(listing: Listing, is_rent: bool) -> str:
         cross_html = (
             f'<span style="display:inline-block;padding:2px 8px;border-radius:4px;'
             f'font-size:11px;background:#f0f0f0;color:#555;margin-right:4px;">'
-            f'take na: {escape(sites)}</span>'
+            f'také na: {escape(sites)}</span>'
         )
 
     # Maps link
     maps_html = ""
-    if listing.lat and listing.lon:
-        maps_url = f"https://maps.google.com/?q={listing.lat},{listing.lon}"
+    if listing.lat is not None and listing.lon is not None:
+        maps_url = escape(f"https://maps.google.com/?q={listing.lat},{listing.lon}", quote=True)
         maps_html = f' <a href="{maps_url}" style="font-size:12px;color:#1a73e8;text-decoration:none;">[mapa]</a>'
 
     card_border = "border-left:4px solid #d93025;" if listing.price_drop_from else ""
 
     return f"""
-    <div style="background:#fff;border-radius:8px;overflow:hidden;margin-bottom:16px;{card_border}">
+    <div style="background:#fff;border-radius:8px;overflow:hidden;margin-bottom:16px;border:1px solid #e0e0e0;{card_border}">
       {img_html}
       <div style="padding:16px;">
         <div style="font-size:16px;font-weight:600;margin:0 0 8px;">
@@ -150,11 +166,11 @@ def _render_disappeared_section(disappeared: list[dict], is_rent: bool) -> str:
             f'<a href="{url}" style="color:#999;text-decoration:line-through;">{title}</a>'
             f' - {price_str}</div>'
         )
-    extra = f'<div style="color:#999;font-size:12px;margin-top:8px;">...a dalsi {len(disappeared) - 10}</div>' if len(disappeared) > 10 else ''
+    extra = f'<div style="color:#999;font-size:12px;margin-top:8px;">...a dalších {len(disappeared) - 10}</div>' if len(disappeared) > 10 else ''
     return f"""
-    <div style="margin-top:24px;padding:16px;background:#fff;border-radius:8px;">
+    <div style="margin-top:24px;padding:16px;background:#fff;border-radius:8px;border:1px solid #e0e0e0;">
       <div style="font-size:16px;font-weight:600;color:#d93025;margin-bottom:12px;">
-        Zmizelo {len(disappeared)} nabidek
+        Zmizelo {len(disappeared)} nabídek
       </div>
       {''.join(rows)}
       {extra}
@@ -181,14 +197,22 @@ def send_email(listings: list[Listing], email_cfg: dict, profile: dict | None = 
     drop_count = sum(1 for l in listings if l.price_drop_from)
     subtitle_parts = []
     if new_count:
-        subtitle_parts.append(f"{new_count} novych")
+        subtitle_parts.append(f"{new_count} nových")
     if drop_count:
         subtitle_parts.append(f"{drop_count} slev")
     subtitle = ", ".join(subtitle_parts) + f" ({now})"
 
+    # Subject line - distinguish new vs drops
+    subject_parts = []
+    if new_count:
+        subject_parts.append(f"{new_count} nových nabídek")
+    if drop_count:
+        subject_parts.append(f"{drop_count} slev")
+    subject_detail = ", ".join(subject_parts)
+
     html = f"""<!DOCTYPE html>
 <html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{escape(profile_name)}</title></head>
 <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5;margin:0;padding:20px;">
 <div style="max-width:700px;margin:0 auto;">
   <h1 style="color:#1a1a1a;font-size:22px;margin-bottom:4px;">{escape(profile_name)}</h1>
@@ -201,7 +225,7 @@ def send_email(listings: list[Listing], email_cfg: dict, profile: dict | None = 
 </html>"""
 
     msg = MIMEMultipart("alternative")
-    msg["Subject"] = f"{profile_name}: {len(listings)} novych nabidek"
+    msg["Subject"] = f"{profile_name}: {subject_detail}"
     msg["From"] = email_cfg["from"]
     msg["Date"] = formatdate(localtime=True)
     msg["Message-ID"] = make_msgid(domain="byt-watchdog")
@@ -216,15 +240,15 @@ def send_email(listings: list[Listing], email_cfg: dict, profile: dict | None = 
     for l in listings:
         extras = []
         if l.price_drop_from:
-            extras.append(f"SLEVA z {l.price_drop_from}")
+            extras.append(f"SLEVA z {_format_price_plain(l.price_drop_from, is_rent)}")
         if l.land_m2:
-            extras.append(f"pozemek {l.land_m2}m2")
+            extras.append(f"pozemek {l.land_m2} m2")
         if l.nearest_stop:
             extras.append(l.nearest_stop)
         extra_str = " | ".join(extras)
         if extra_str:
             extra_str = f" | {extra_str}"
-        plain_lines.append(f"- [{l.score}%] {l.title} | {_format_price(l.price, is_rent)}{extra_str} | {l.url}")
+        plain_lines.append(f"- [{l.score}%] {l.title} | {_format_price_plain(l.price, is_rent)}{extra_str} | {l.url}")
     plain = "\n".join(plain_lines)
 
     msg.attach(MIMEText(plain, "plain", "utf-8"))

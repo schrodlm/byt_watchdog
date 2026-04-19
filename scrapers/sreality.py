@@ -48,9 +48,11 @@ class SrealityScraper(BaseScraper):
             return []
 
         # Sreality's API is load-balanced across servers with different indexes.
-        # A single request may miss listings. We fetch 3 times and merge results
-        # to get a complete picture.
+        # A single request may miss listings. We fetch 3 times and merge results.
+        # Only listings seen on 2+ fetches are included — listings on a single
+        # shard may be "ghost" entries that return 410 when you visit the detail page.
         all_estates = {}  # hash_id -> estate dict
+        seen_count = {}   # hash_id -> number of fetches it appeared in
         params = self._build_params()
 
         for attempt in range(3):
@@ -58,18 +60,24 @@ class SrealityScraper(BaseScraper):
             resp.raise_for_status()
             data = resp.json()
             estates = data.get("_embedded", {}).get("estates", [])
-            new_count = 0
             for e in estates:
                 hid = e.get("hash_id")
-                if hid and hid not in all_estates:
+                if not hid:
+                    continue
+                seen_count[hid] = seen_count.get(hid, 0) + 1
+                if hid not in all_estates:
                     all_estates[hid] = e
-                    new_count += 1
-            if new_count == 0 and attempt > 0:
-                break  # No new results, second server not different
             time.sleep(1)
 
+        # Filter to listings seen on 2+ shards (confirmed to exist broadly)
+        confirmed = {hid: e for hid, e in all_estates.items() if seen_count.get(hid, 0) >= 2}
+        # If only 1 fetch worked (all same shard), fall back to all results
+        unique_fetch_sizes = len(set(seen_count.values()))
+        if unique_fetch_sizes <= 1:
+            confirmed = all_estates
+
         listings = []
-        for e in all_estates.values():
+        for e in confirmed.values():
             hash_id = e.get("hash_id")
             price = e.get("price", 0)
             if self.max_price > 0 and (price > self.max_price or price < self.min_price):
